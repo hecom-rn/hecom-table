@@ -1,18 +1,18 @@
-# react-native-hecom-table
+# hecom-table
 
 hecom table
 
 ## Installation
 
 ```sh
-npm install react-native-hecom-table
+npm install hecom-table
 ```
 
 ## Usage
 
 
 ```js
-import { multiply } from 'react-native-hecom-table';
+import { multiply } from 'hecom-table';
 
 // ...
 

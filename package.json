@@ -1,5 +1,5 @@
 {
-  "name": "react-native-hecom-table",
+  "name": "hecom-table",
   "version": "0.1.0",
   "description": "hecom table",
   "source": "./src/index.tsx",
@@ -37,7 +37,7 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace react-native-hecom-table-example",
+    "example": "yarn workspace hecom-table-example",
     "test": "jest",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
@@ -52,14 +52,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hecom-rn/react-native-hecom-table.git"
+    "url": "git+https://github.com/hecom-rn/hecom-table.git"
   },
   "author": "summer88123 <summer88123@163.com> (https://github.com/summer88123)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/hecom-rn/react-native-hecom-table/issues"
+    "url": "https://github.com/hecom-rn/hecom-table/issues"
   },
-  "homepage": "https://github.com/hecom-rn/react-native-hecom-table#readme",
+  "homepage": "https://github.com/hecom-rn/hecom-table#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
@@ -80,15 +80,21 @@
     "react": "18.3.1",
     "react-native": "0.76.6",
     "react-native-builder-bob": "^0.32.0",
+    "react-native-gesture-handler": "^2.22.1",
+    "react-native-svg": "^15.11.1",
     "release-it": "^17.10.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "zrender": "^5.6.1"
   },
   "resolutions": {
     "@types/react": "^18.2.44"
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-gesture-handler": "*",
+    "react-native-svg": "*",
+    "zrender": "*"
   },
   "workspaces": [
     "example"
@@ -130,11 +136,14 @@
       "prettier"
     ],
     "rules": {
+      "no-dupe-class-members": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
       "react/react-in-jsx-scope": "off",
       "prettier/prettier": [
         "error",
         {
           "quoteProps": "consistent",
+          "printWidth": 120,
           "singleQuote": true,
           "tabWidth": 2,
           "trailingComma": "es5",
@@ -150,6 +159,7 @@
   "prettier": {
     "quoteProps": "consistent",
     "singleQuote": true,
+    "printWidth": 120,
     "tabWidth": 2,
     "trailingComma": "es5",
     "useTabs": false

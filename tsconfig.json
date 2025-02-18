@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "react-native-hecom-table": ["./src/index"]
+      "hecom-table": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

@@ -1,5 +1,5 @@
 {
-  "name": "react-native-hecom-table-example",
+  "name": "hecom-table-example",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -15,7 +15,9 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-native": "0.76.6",
-    "react-native-web": "~0.19.13"
+    "react-native-gesture-handler": "^2.22.1",
+    "react-native-svg": "^15.11.1",
+    "zrender": "^5.6.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

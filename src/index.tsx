@@ -1,3 +1,3 @@
-export function multiply(a: number, b: number): number {
-  return a * b;
-}
+export { SmartTable } from './form/core/SmartTable';
+export { ArrayTableData } from './form/data/table/ArrayTableData';
+export * from './types';
