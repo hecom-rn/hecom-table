@@ -4,11 +4,11 @@ import type { IComponent } from './IComponent';
  * Created by huang on 2017/10/26.
  */
 export interface ITableTitle extends IComponent<String> {
-  getSize(): number;
+    getSize(): number;
 
-  setSize(size: number): void;
+    setSize(size: number): void;
 
-  getDirection(): number;
+    getDirection(): number;
 
-  setDirection(direction: number): void;
+    setDirection(direction: number): void;
 }

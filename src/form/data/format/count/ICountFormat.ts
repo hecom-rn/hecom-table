@@ -1,11 +1,11 @@
 /**
  */
 export interface ICountFormat<T> {
-  count(t: T): void;
+    count(t: T): void;
 
-  getCount(): number;
+    getCount(): number;
 
-  getCountString(): string;
+    getCountString(): string;
 
-  clearCount(): void;
+    clearCount(): void;
 }

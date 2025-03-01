@@ -1,61 +1,111 @@
+import { PathEffect } from './Path';
+
 export class Paint {
-  static ANTI_ALIAS_FLAG: string = 'ANTI_ALIAS_FLAG';
+    static ANTI_ALIAS_FLAG: string = 'ANTI_ALIAS_FLAG';
 
-  constructor(flag: string) {}
+    private color: string = Color.WHITE;
 
-  measureText(text: string): number {
-    return 0;
-  }
+    private style: Style = Style.FILL;
 
-  setColor(textColor: string) {}
+    private strokeWidth: number = 0;
 
-  setTextAlign(align: Align) {}
+    private pathEffect: PathEffect = new PathEffect();
 
-  setTextSize(textSize: number) {}
+    private align: Align = Align.CENTER;
 
-  setStyle(style: Style) {}
+    private textSize: number = 12;
 
-  setStrokeWidth(width: number) {}
+    private lineWidth: number = 1;
 
-  setPathEffect(effect: PathEffect) {}
+    constructor(flag: string) {}
 
-  getTextSize() {
-    return 0;
-  }
+    measureText(text: string): number {
+        // TODO 需要替换成真实的计算方法
+        return text.length;
+    }
 
-  getFontMetrics() {
-    return {
-      descent: 0,
-      ascent: 0,
-    };
-  }
+    getColor(): string {
+        return this.color;
+    }
 
-  descent() {
-    return 0;
-  }
+    setColor(textColor: string) {
+        this.color = textColor;
+    }
 
-  ascent() {
-    return 0;
-  }
+    setTextAlign(align: Align) {
+        this.align = align;
+    }
 
-  getTextAlign() {
-    return Align.CENTER;
-  }
+    setTextSize(textSize: number) {
+        this.textSize = textSize;
+    }
+
+    getStyle(): Style {
+        return this.style;
+    }
+
+    setStyle(style: Style) {
+        this.style = style;
+    }
+
+    setStrokeWidth(width: number) {
+        this.strokeWidth = width;
+    }
+
+    getStrokeWidth(): number {
+        return this.strokeWidth;
+    }
+
+    setPathEffect(effect: PathEffect) {
+        this.pathEffect = effect;
+    }
+
+    getPathEffect(): PathEffect {
+        return this.pathEffect;
+    }
+
+    getTextSize() {
+        return this.textSize;
+    }
+
+    getFontMetrics() {
+        return {
+            descent: 0,
+            ascent: 0,
+        };
+    }
+
+    descent() {
+        return 0;
+    }
+
+    ascent() {
+        return 0;
+    }
+
+    getTextAlign() {
+        return this.align;
+    }
+
+    getLineWidth() {
+        return this.lineWidth;
+    }
 }
 
 export class TextPaint extends Paint {}
 
 export enum Color {
-  BLACK = '#000',
+    BLACK = '#000',
+    WHITE = '#FFF',
 }
 
 export enum Style {
-  FILL = 'fill',
-  STROKE = 'stroke',
+    FILL = 'fill',
+    STROKE = 'stroke',
 }
 
 export enum Align {
-  CENTER = 'center',
-  LEFT = 'left',
-  RIGHT = 'right',
+    CENTER = 'center',
+    LEFT = 'left',
+    RIGHT = 'right',
 }

@@ -1,3 +1,3 @@
 export interface IFormat<T> {
-  format(t: T): string;
+    format(t: T): string;
 }

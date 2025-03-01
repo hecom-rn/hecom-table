@@ -1,3 +1,3 @@
 export interface TableClickObserver {
-  onClick(x: number, y: number): void;
+    onClick(x: number, y: number): void;
 }

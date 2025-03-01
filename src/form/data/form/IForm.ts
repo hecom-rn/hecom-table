@@ -1,9 +1,9 @@
 import type { Align } from '../../utils/Paint';
 
 export interface IForm {
-  getSpanWidthSize(): number;
+    getSpanWidthSize(): number;
 
-  getSpanHeightSize(): number;
+    getSpanHeightSize(): number;
 
-  getAlign(): Align;
+    getAlign(): Align;
 }

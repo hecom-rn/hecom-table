@@ -1,11 +1,26 @@
 export class Path {
-  constructor() {}
+    public startX: number;
+    public startY: number;
+    public endX: number;
+    public endY: number;
+    constructor() {
+        this.startX = 0;
+        this.startY = 0;
+        this.endX = 0;
+        this.endY = 0;
+    }
 
-  lineTo(x: number, y: number): void {}
+    lineTo(x: number, y: number): void {
+        this.endX = x;
+        this.endY = y;
+    }
 
-  moveTo(x: number, y: number): void {}
+    moveTo(x: number, y: number): void {
+        this.startX = x;
+        this.startY = y;
+    }
 
-  rewind() {}
+    rewind() {}
 }
 
 export class PathEffect {}
