@@ -102,7 +102,6 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
             this.matrixHelper.handlerTouchEvent(new MotionEvent(MotionEvent.ACTION_UP, e.offsetX, e.offsetY, 1, 1));
         });
         this.zrender.on('mousewheel', (e) => {
-            console.log('mousewheel e = ');
             switch (e.event.zrStatus) {
                 case 'pinchBegin':
                     this.matrixHelper.onScaleBegin(new ScaleGestureDetector(e.event.zrScale));
@@ -145,7 +144,7 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
         return { width, height };
     }
 
-    private initTableData() {
+    protected initTableData() {
         const { tableData } = this.props;
         const { width, height } = this.getWidthAndHeight();
         this.setTableData(tableData);
@@ -160,7 +159,7 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
         //   this.getWidth() - this.getPaddingRight(),
         //   this.getHeight() - this.getPaddingBottom()
         // );
-        this.initTableData();
+
         if (this.tableData != null) {
             const rect = this.tableData.getTableInfo().getTableRect();
             if (rect != null) {

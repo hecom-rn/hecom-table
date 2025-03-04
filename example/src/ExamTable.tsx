@@ -31,7 +31,7 @@ export default function ExamTable() {
             >
                 <Text style={{ width: 200, height: 30, backgroundColor: 'red' }}>初始化表格数据</Text>
             </TouchableHighlight>
-            {show && <HecomTable style={styles.table} frozenRows={0} frozenColumns={2} tableData={tableData.current} />}
+            {show && <HecomTable style={styles.table} frozenRows={2} frozenColumns={1} tableData={tableData.current} />}
         </View>
     );
 }

@@ -65,7 +65,7 @@ export class LockHelper extends Locker {
 
         // 应用新的固定列
         for (let i = 0; i < this.frozenColumns && i < arrayColumnSize; i++) {
-            newData.columns[i].fixed = true;
+            newData.columns[i]?.setFixed(true);
         }
 
         // 迁移旧的锁定状态
@@ -73,7 +73,7 @@ export class LockHelper extends Locker {
             for (let i = 0; i < arrayColumnSize; i++) {
                 const oldColumn = oldData.arrayColumns[i];
                 if (oldColumn?.fixed) {
-                    newData.arrayColumns[i].fixed = true;
+                    newData.arrayColumns[i]?.setFixed(true);
                 }
             }
         }

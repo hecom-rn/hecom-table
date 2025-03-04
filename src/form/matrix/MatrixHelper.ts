@@ -44,18 +44,6 @@ class GestureDetector {
                         this.velocityX = deltaX / deltaTime;
                         this.velocityY = deltaY / deltaTime;
                     }
-                    console.log(
-                        'this.velocityX = ',
-                        this.velocityX,
-                        ', deltaX = ',
-                        deltaX,
-                        'this.velocityY = ',
-                        this.velocityY,
-                        ', deltaY = ',
-                        deltaY,
-                        ', deltaTime = ',
-                        deltaTime
-                    );
                     this.lastMoveTime = now;
                     this.lastMoveX = event.getX();
                     this.lastMoveY = event.getY();
@@ -188,7 +176,6 @@ class ValueAnimator {
             const numberArray = this.generateInertiaValues(this.startNumber, this.end, this.duration, interval);
             this.executeSequence(
                 (value: number) => {
-                    console.log('number interval value = ', value);
                     this.listener &&
                         this.listener({
                             getAnimatedValue: () => -value,
@@ -201,7 +188,6 @@ class ValueAnimator {
             const pointArray = this.generateInertiaValues(this.startPoint, this.endPoint, this.duration, interval);
             this.executeSequence(
                 (value: Point) => {
-                    console.log('point interval value = ', value);
                     this.listener &&
                         this.listener({
                             getAnimatedValue: () => ({
@@ -549,14 +535,7 @@ export class MatrixHelper
         const oldZoom = this.zoom;
         let isScaleEnd = false;
         const scale = detector.getScaleFactor();
-        console.log(
-            'scale = ',
-            scale,
-            ', this.isScaleMAx = ',
-            this.isScaleMin,
-            ', this.isScaleMin = ',
-            this.isScaleMin
-        );
+
         if (scale > 1 && this.isScaleMax) {
             this.isScaleMin = false;
             return true;
@@ -579,7 +558,6 @@ export class MatrixHelper
         }
         const factor = this.zoom / oldZoom;
         this.resetTranslate(factor);
-        console.log('this.zoom = ', this.zoom);
         this.notifyViewChanged();
         return isScaleEnd;
     }

@@ -21,6 +21,8 @@ export interface Canvas {
 
     drawRect(rect: Rect, paint: Paint): void;
 
+    drawRoundRect(rect: Rect, rX: number, rY: number, paint: Paint): void;
+
     drawBitmap(bitmap: Bitmap, imgRect: Rect, drawRect: Rect, paint: Paint): void;
 
     drawText(string: string, textCenterX: number, textCenterY: number, paint: Paint): void;
@@ -103,6 +105,10 @@ export class CanvasImpl implements Canvas {
         } else if (args?.length === 5) {
             this.drawRect2(args[0], args[1], args[2], args[3], args[4]);
         }
+    }
+
+    drawRoundRect(rect: Rect, rX: number, rY: number, paint: Paint) {
+        this.drawRect1(rect, paint);
     }
 
     drawRect1(rect: Rect, paint: Paint) {

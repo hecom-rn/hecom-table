@@ -33,7 +33,7 @@ export class Paint {
         //     return width;
         // }
         // TODO 需要替换成真实的计算方法
-        return text.length * 10;
+        return text.length * 4;
     }
 
     getColor(): string {

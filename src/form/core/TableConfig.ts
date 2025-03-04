@@ -13,6 +13,7 @@ export class TableConfig {
     private static readonly defaultFontStyle: FontStyle = new FontStyle();
     private static readonly defaultGridStyle: LineStyle = new LineStyle();
     public static readonly INVALID_COLOR: string = '';
+    public static readonly WHITE: string = '#FFFFFF';
 
     public dp10?: number;
 
@@ -41,7 +42,7 @@ export class TableConfig {
     private _isShowXSequence: boolean = true;
     private _isShowYSequence: boolean = true;
     private _isShowTableTitle: boolean = true;
-    private _isShowColumnTitle: boolean = true;
+    private _isShowColumnTitle: boolean = false;
     private contentCellBackgroundFormat?: ICellBackgroundFormat<CellInfo>;
     private columnCellBackgroundFormat?: ICellBackgroundFormat<Column>;
     private XSequenceCellBgFormat?: ICellBackgroundFormat<number>;
