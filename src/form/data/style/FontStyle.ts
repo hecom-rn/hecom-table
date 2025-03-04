@@ -1,9 +1,9 @@
 import { Paint, Align, Style } from '../../utils/temp';
 
 export class FontStyle {
-    private static defaultFontSize: number = 12;
+    private static defaultFontSize: number = 24;
     private static defaultFontColor: string = '#636363';
-    private static defaultAlign: Align = Align.CENTER;
+    private static defaultAlign: Align = Align.LEFT;
     private textSize: number;
     private textColor: string;
     private align: Align;

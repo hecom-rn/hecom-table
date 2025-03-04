@@ -1,5 +1,5 @@
 import { Text, View, StyleSheet, TouchableHighlight } from 'react-native';
-import { SmartTable, HecomTableData, HecomFormat, TextDrawFormat, Cell } from 'hecom-table';
+import { HecomTable, HecomTableData, HecomFormat, TextDrawFormat, Cell } from 'hecom-table';
 import { gestureHandlerRootHOC } from 'react-native-gesture-handler';
 import { useEffect, useRef, useState } from 'react';
 
@@ -9,7 +9,7 @@ export default function ExamTable() {
     useEffect(() => {
         console.log('useEffect');
         const testData: Cell[][] = [];
-        for (let i = 0; i < 50; i++) {
+        for (let i = 0; i < 150; i++) {
             const tmp: Cell[] = [];
             for (let j = 0; j < 20; j++) {
                 const c = new Cell();
@@ -31,7 +31,7 @@ export default function ExamTable() {
             >
                 <Text style={{ width: 200, height: 30, backgroundColor: 'red' }}>初始化表格数据</Text>
             </TouchableHighlight>
-            {show && <SmartTable style={styles.table} tableData={tableData.current} />}
+            {show && <HecomTable style={styles.table} frozenRows={0} frozenColumns={2} tableData={tableData.current} />}
         </View>
     );
 }
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     },
     table: {
         width: 300,
-        height: 200,
+        height: 500,
         backgroundColor: 'gray',
     },
 });

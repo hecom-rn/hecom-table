@@ -9,6 +9,8 @@ import Scroller from './Scroller';
 import type { SmartTable } from '../core/SmartTable';
 
 class GestureDetector {
+    static MIN_SCROLL_LENGTH: number = 10;
+
     private simpleOnGestureListener: SimpleOnGestureListener;
     startX: number = 0;
     lastMoveX: number = 0;
@@ -60,10 +62,16 @@ class GestureDetector {
                 }
                 break;
             case MotionEvent.ACTION_UP:
+                if (
+                    Math.abs(event.getX() - this.lastMoveX) > GestureDetector.MIN_SCROLL_LENGTH ||
+                    Math.abs(event.getY() - this.lastMoveY) > GestureDetector.MIN_SCROLL_LENGTH
+                ) {
+                    this.simpleOnGestureListener.onFling(undefined, undefined, this.velocityX, this.velocityY);
+                } else {
+                    this.simpleOnGestureListener.onSingleTapUp(event);
+                }
                 this.startX = 0;
                 this.startY = 0;
-                this.simpleOnGestureListener.onSingleTapUp(event);
-                this.simpleOnGestureListener.onFling(undefined, undefined, this.velocityX, this.velocityY);
                 break;
             default:
                 break;
@@ -175,12 +183,12 @@ class ValueAnimator {
     }
 
     start() {
-        const interval = 1;
+        const interval = 10;
         if (this.startNumber !== undefined && this.end !== undefined) {
             const numberArray = this.generateInertiaValues(this.startNumber, this.end, this.duration, interval);
             this.executeSequence(
                 (value: number) => {
-                    console.log('interval value = ', value);
+                    console.log('number interval value = ', value);
                     this.listener &&
                         this.listener({
                             getAnimatedValue: () => -value,
@@ -193,7 +201,7 @@ class ValueAnimator {
             const pointArray = this.generateInertiaValues(this.startPoint, this.endPoint, this.duration, interval);
             this.executeSequence(
                 (value: Point) => {
-                    console.log('interval value = ', value);
+                    console.log('point interval value = ', value);
                     this.listener &&
                         this.listener({
                             getAnimatedValue: () => ({

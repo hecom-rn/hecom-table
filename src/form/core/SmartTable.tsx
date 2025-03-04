@@ -65,7 +65,7 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
         this.config.setTableGridFormat(new HecomGridFormat(this));
         this.paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         this.textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-        this.textPaint.setTextAlign(Align.CENTER);
+        this.textPaint.setTextAlign(Align.LEFT);
         this.textPaint.setTextSize(new FontStyle().getTextSize());
         this.showRect = new Rect();
         this.parser = new TableParser<T>();

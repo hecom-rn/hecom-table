@@ -3,6 +3,7 @@ import type { ExtraText } from './ExtraText';
 import { TableConfig } from '../../form/core/TableConfig';
 import type { ProgressStyle } from './ProgressStyle';
 import { Color } from '../../form/utils/Paint';
+import { HecomGridFormat } from '../format/HecomGridFormat';
 
 enum TextAlign {
     LEFT = 0,
@@ -22,7 +23,7 @@ export class Cell {
     private progressStyle: ProgressStyle | null = null;
     private _isOverstriking: boolean = false;
     private _isForbidden: boolean = false; // 斜线
-    private classificationLinePosition: number = 2;
+    private classificationLinePosition: number = HecomGridFormat.NORMAL;
     private classificationLineColor: string = Color.BLACK;
     private boxLineColor: string = TableConfig.INVALID_COLOR;
     private strikethrough: boolean = false; // 删除线

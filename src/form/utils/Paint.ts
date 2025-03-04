@@ -1,4 +1,8 @@
 import { PathEffect } from './Path';
+import Text from 'zrender/lib/graphic/Text';
+import { platformApi } from 'zrender/lib/core/platform.js';
+
+const WidthMap = new Map<String, number>();
 
 export class Paint {
     static ANTI_ALIAS_FLAG: string = 'ANTI_ALIAS_FLAG';
@@ -11,17 +15,25 @@ export class Paint {
 
     private pathEffect: PathEffect = new PathEffect();
 
-    private align: Align = Align.CENTER;
+    private align: Align = Align.LEFT;
 
-    private textSize: number = 12;
+    private textSize: number = 24;
 
     private lineWidth: number = 1;
 
     constructor(flag: string) {}
 
     measureText(text: string): number {
+        // if (WidthMap.has(text)) {
+        //     return WidthMap.get(text) || text.length;
+        // } else {
+        //     const { width } = platformApi.measureText(text);
+        //     console.log('text = ', text, ', width = ', width);
+        //     WidthMap.set(text, width);
+        //     return width;
+        // }
         // TODO 需要替换成真实的计算方法
-        return text.length;
+        return text.length * 10;
     }
 
     getColor(): string {
@@ -70,7 +82,7 @@ export class Paint {
 
     getFontMetrics() {
         return {
-            descent: 0,
+            descent: this.textSize,
             ascent: 0,
         };
     }

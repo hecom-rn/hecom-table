@@ -49,7 +49,11 @@ export class CanvasImpl implements Canvas {
     }
 
     drawPath(path: Path, paint: Paint) {
-        this.drawLine(path.startX, path.startY, path.endX, path.endY, paint);
+        path?.points?.forEach((arr) => {
+            for (let i = 0; i < arr?.length - 1; ++i) {
+                this.drawLine(arr[i]?.x, arr[i]?.y, arr[i + 1]?.x, arr[i + 1]?.y, paint);
+            }
+        });
     }
 
     drawLine(startX: number, startY: number, endX: number, endY: number, paint: Paint) {

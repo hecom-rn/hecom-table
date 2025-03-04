@@ -410,7 +410,7 @@ export class TableData<T> {
  * 表格单元格Cell点击事件接口
  */
 export interface OnItemClickListener<T> {
-    (column: Column<T>, value: string, t: T, col: number, row: number): void;
+    onClick(column: Column<T>, value: string, t: T, col: number, row: number): void;
 }
 
 /**
