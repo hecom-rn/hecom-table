@@ -88,19 +88,19 @@ export class CanvasImpl implements Canvas {
             this.clipRectObj
         );
         if (points?.length === 2) {
-            // const line = new Line({
-            //     shape: {
-            //         x1: points[0].x,
-            //         y1: points[0].y,
-            //         x2: points[1].x,
-            //         y2: points[1].y,
-            //     },
-            //     style: {
-            //         stroke: paint.getColor(),
-            //         lineWidth: 1,
-            //     },
-            // });
-            // this.rootGroup.add(line);
+            const line = new Line({
+                shape: {
+                    x1: points[0].x,
+                    y1: points[0].y,
+                    x2: points[1].x,
+                    y2: points[1].y,
+                },
+                style: {
+                    stroke: paint.getColor(),
+                    lineWidth: 1,
+                },
+            });
+            this.rootGroup.add(line);
         }
     }
 
