@@ -1,10 +1,24 @@
 /* eslint-disable no-dupe-class-members */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Rect, type Bitmap, type Paint, type Path } from './temp';
+import { Point, Rect, type Bitmap, type Paint } from './temp';
 import ZRect from 'zrender/lib/graphic/shape/Rect';
 import Text from 'zrender/lib/graphic/Text';
 import Line from 'zrender/lib/graphic/shape/Line';
-import type { ZRenderType } from 'zrender/lib/zrender';
+import Group from 'zrender/lib/graphic/Group';
+import { createFromString } from 'zrender/lib/tool/path.js';
+import { ZRender } from 'zrender/lib/zrender';
+import Path from 'zrender/lib/graphic/Path.js';
+import { ClipPath } from 'react-native-svg';
+
+class LineObj {
+    start: Point;
+    end: Point;
+
+    constructor(startX: number, startY: number, endX: number, endY: number) {
+        this.start = new Point(startX, startY);
+        this.end = new Point(endX, endY);
+    }
+}
 
 export interface Canvas {
     drawTextOnPath(text: string, path: Path, hOffset: number, vOffset: number, paint: Paint): void;
@@ -41,13 +55,22 @@ export interface Canvas {
 }
 
 export class CanvasImpl implements Canvas {
-    zrender: ZRenderType;
+    zrender: ZRender;
 
-    constructor(zrender: ZRenderType) {
+    rootGroup: Group;
+
+    clipRectPath: Path;
+
+    clipRectObj: Rect;
+
+    constructor(zrender: ZRender) {
         this.zrender = zrender;
+        this.rootGroup = new Group();
+        this.clipRectObj = new Rect(0, 0, 0, 0);
+        this.zrender.add(this.rootGroup);
     }
     clear(): void {
-        this.zrender?.clear();
+        this.rootGroup?.removeAll();
     }
 
     drawPath(path: Path, paint: Paint) {
@@ -59,19 +82,26 @@ export class CanvasImpl implements Canvas {
     }
 
     drawLine(startX: number, startY: number, endX: number, endY: number, paint: Paint) {
-        const line = new Line({
-            shape: {
-                x1: startX,
-                y1: startY,
-                x2: endX,
-                y2: endY,
-            },
-            style: {
-                stroke: paint.getColor(),
-                lineWidth: 2,
-            },
-        });
-        this.zrender.add(line);
+        const points = this.findLineRectIntersection(
+            new Point(startX, startY),
+            new Point(endX, endY),
+            this.clipRectObj
+        );
+        if (points?.length === 2) {
+            // const line = new Line({
+            //     shape: {
+            //         x1: points[0].x,
+            //         y1: points[0].y,
+            //         x2: points[1].x,
+            //         y2: points[1].y,
+            //     },
+            //     style: {
+            //         stroke: paint.getColor(),
+            //         lineWidth: 1,
+            //     },
+            // });
+            // this.rootGroup.add(line);
+        }
     }
 
     drawTextOnPath(text: string, path: Path, hOffset: number, vOffset: number, paint: Paint): void {
@@ -90,13 +120,15 @@ export class CanvasImpl implements Canvas {
     clipRect(rect: Rect): void;
     clipRect(left: number, top: number, right: number, bottom: number): void;
     clipRect(leftOrRect: number | Rect, top?: number, right?: number, bottom?: number): void {
-        // console.log('clipRect', leftOrRect, top, right, bottom);
-        // throw new Error('Method not implemented.');
+        if (leftOrRect instanceof Rect) {
+            this.clipRectObj = new Rect(leftOrRect);
+        } else {
+            this.clipRectObj = new Rect(leftOrRect, top, right, bottom);
+        }
     }
 
     restore(): void {
-        // console.log('restore');
-        // throw new Error('Method not implemented.');
+        this.clipRectObj = new Rect(0, 0, 0, 0);
     }
 
     drawRect(...args: any[]): void {
@@ -128,8 +160,7 @@ export class CanvasImpl implements Canvas {
                 fill: paint.getColor(),
             },
         });
-        this.zrender.add(rect);
-        // throw new Error('Method not implemented.');
+        // this.rootGroup.add(rect);
     }
 
     drawBitmap(bitmap: Bitmap, imgRect: Rect, drawRect: Rect, paint: Paint): void {
@@ -137,6 +168,8 @@ export class CanvasImpl implements Canvas {
     }
 
     drawText(string: string, textCenterX: number, textCenterY: number, paint: Paint): void {
+        const pathStr = `M ${Math.max(0, this.clipRectObj.left - textCenterX)} ${0} h ${this.clipRectObj.width} v ${this.clipRectObj.height} h ${-this.clipRectObj.width} Z`;
+        this.clipRectPath = createFromString(pathStr);
         const cell = new Text({
             // draggable: true,
             x: textCenterX,
@@ -147,9 +180,9 @@ export class CanvasImpl implements Canvas {
                 fontSize: paint.getTextSize(),
                 textAlign: paint.getTextAlign(),
             },
+            clipPath: this.clipRectPath,
         });
-        this.zrender.add(cell);
-        // throw new Error('Method not implemented.');
+        this.rootGroup.add(cell);
     }
 
     getSaveCount(): number {
@@ -158,5 +191,117 @@ export class CanvasImpl implements Canvas {
 
     translate(width: number, number: number): void {
         throw new Error('Method not implemented.');
+    }
+
+    // 主函数实现
+    findLineRectIntersection(start: Point, end: Point, rect: Rect): Point[] {
+        // 1. 处理矩形标准化（确保min/max正确）
+        const [left, right] = [Math.min(rect.left, rect.right), Math.max(rect.left, rect.right)];
+        const [top, bottom] = [Math.min(rect.top, rect.bottom), Math.max(rect.top, rect.bottom)];
+
+        // 2. 检查端点是否在矩形内[1,3](@ref)
+        const startInside = this.isPointInRect(start, new Rect(left, top, right, bottom));
+        const endInside = this.isPointInRect(end, new Rect(left, top, right, bottom));
+
+        if (startInside && endInside) {
+            return [start, end];
+        }
+
+        // 3. 检查与四条边的交点
+        const edges = [
+            new LineObj(left, bottom, left, top), // 左边
+            new LineObj(right, bottom, right, top), // 右边
+            new LineObj(left, top, right, top), // 上边
+            new LineObj(left, bottom, right, bottom), // 下边
+        ];
+
+        const intersections: Point[] = [];
+
+        // 4. 计算与各边的有效交点[5,6](@ref)
+        for (const edge of edges) {
+            const intersectPoint = this.getLineIntersection(start, end, edge);
+            if (intersectPoint && this.isPointOnEdge(intersectPoint, edge)) {
+                intersections.push(intersectPoint);
+            }
+        }
+
+        // 5. 合并端点和交点，排序后返回结果
+        const points = [];
+        if (startInside) points.push(start);
+        if (endInside) points.push(end);
+        points.push(...intersections);
+
+        // 按线段方向排序[4](@ref)
+        return points.sort((a, b) => this.distance(start, a) - this.distance(start, b));
+    }
+
+    // 判断点是否在线段上的方法
+    isPointOnEdge(point: Point, edge: LineObj, epsilon = 1): boolean {
+        const A = edge.start;
+        const B = edge.end;
+        const P = point;
+
+        // 1. 检查是否线段退化为点
+        if (Math.abs(A.x - B.x) < epsilon && Math.abs(A.y - B.y) < epsilon) {
+            return Math.abs(P.x - A.x) < epsilon && Math.abs(P.y - A.y) < epsilon;
+        }
+
+        // 2. 检查点是否在线段延长线上（叉积为0）
+        const crossProduct = (B.x - A.x) * (P.y - A.y) - (B.y - A.y) * (P.x - A.x);
+        if (Math.abs(crossProduct) > epsilon) return false;
+
+        // 3. 检查点是否在线段坐标范围内（点积判断）
+        const dotProduct = (P.x - A.x) * (B.x - A.x) + (P.y - A.y) * (B.y - A.y);
+        if (dotProduct < -epsilon) return false;
+
+        const squaredLengthBA = (B.x - A.x) ** 2 + (B.y - A.y) ** 2;
+        if (dotProduct > squaredLengthBA + epsilon) return false;
+
+        return true;
+    }
+
+    // 辅助函数：判断点是否在矩形内[1](@ref)
+    isPointInRect(p: Point, rect: Rect): boolean {
+        return p.x >= rect.left && p.x <= rect.right && p.y >= rect.top && p.y <= rect.bottom;
+    }
+
+    // 辅助函数：计算线段交点（向量叉乘法）[5,6](@ref)
+    getLineIntersection(start: Point, end: Point, l2: LineObj): Point | undefined {
+        const a1 = end.y - start.y;
+        const b1 = start.x - end.x;
+        const c1 = a1 * start.x + b1 * start.y;
+
+        const a2 = l2.end.y - l2.start.y;
+        const b2 = l2.start.x - l2.end.x;
+        const c2 = a2 * l2.start.x + b2 * l2.start.y;
+
+        const denominator = a1 * b2 - a2 * b1;
+        if (denominator === 0) return undefined; // 平行或重合
+
+        const x = (b2 * c1 - b1 * c2) / denominator;
+        const y = (a1 * c2 - a2 * c1) / denominator;
+
+        // 检查交点是否在两条线段范围内
+        if (
+            this.isBetween(x, start.x, end.x) &&
+            this.isBetween(y, start.y, end.y) &&
+            this.isBetween(x, l2.start.x, l2.end.x) &&
+            this.isBetween(y, l2.start.y, l2.end.y)
+        ) {
+            return new Point(x, y);
+        }
+        return undefined;
+    }
+
+    // 辅助函数：判断值是否在区间内
+    isBetween(value: number, a: number, b: number): boolean {
+        const min = Math.min(a, b);
+        const max = Math.max(a, b);
+        return value >= min - 1e-6 && value <= max + 1e-6;
+    }
+
+    // 辅助函数：计算两点距离
+    distance(p1: Point, p2: Point): number {
+        return Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
     }
 }
