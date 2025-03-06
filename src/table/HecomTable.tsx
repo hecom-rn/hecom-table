@@ -29,7 +29,7 @@ export class HecomTable extends SmartTable<Cell> {
     private resizeColumns = new Map<number, number>();
     private hecomStyle?: HecomStyle;
 
-    private eventEmitter = new NativeEventEmitter(NativeModules.RCTEventEmitter);
+    // private eventEmitter = new NativeEventEmitter(NativeModules.RCTEventEmitter);
 
     constructor(props) {
         super(props);
@@ -39,6 +39,8 @@ export class HecomTable extends SmartTable<Cell> {
     componentDidUpdate() {
         this.initTableData();
         const { frozenRows, frozenColumns, tableData } = this.props;
+        this.mClickHandler = new ClickHandler(this);
+        this.tableData.setOnItemClickListener(this.mClickHandler);
         this.getConfig().setFixedLines(frozenRows);
         this.mLockHelper.setFrozenColumns(frozenColumns);
         this.mLockHelper.reLock(tableData);
@@ -101,12 +103,12 @@ export class HecomTable extends SmartTable<Cell> {
     }
 
     private emitScrollEvent(data: { translateX: number; translateY: number; scale: number }) {
-        this.eventEmitter.emit('onScroll', {
-            nativeEvent: {
-                ...data,
-                target: findNodeHandle(this),
-            },
-        });
+        // this.eventEmitter.emit('onScroll', {
+        //     nativeEvent: {
+        //         ...data,
+        //         target: findNodeHandle(this),
+        //     },
+        // });
     }
 
     private checkScrollEnd(translateY: number) {
@@ -114,9 +116,9 @@ export class HecomTable extends SmartTable<Cell> {
         const isEnd = matrixHelper.getZoomRect().bottom <= matrixHelper.getOriginalRect().bottom;
 
         if (isEnd) {
-            this.eventEmitter.emit('onScrollEnd', {
-                nativeEvent: { target: findNodeHandle(this) },
-            });
+            // this.eventEmitter.emit('onScrollEnd', {
+            //     nativeEvent: { target: findNodeHandle(this) },
+            // });
         }
     }
 

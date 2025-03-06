@@ -55,7 +55,10 @@ class GestureDetector {
                     Math.abs(event.getY() - this.lastMoveY) > GestureDetector.MIN_SCROLL_LENGTH
                 ) {
                     this.simpleOnGestureListener.onFling(undefined, undefined, this.velocityX, this.velocityY);
-                } else {
+                } else if (
+                    Math.abs(event.getX() - this.startX) <= GestureDetector.MIN_SCROLL_LENGTH &&
+                    Math.abs(event.getY() - this.startY) <= GestureDetector.MIN_SCROLL_LENGTH
+                ) {
                     this.simpleOnGestureListener.onSingleTapUp(event);
                 }
                 this.startX = 0;
@@ -643,10 +646,10 @@ export class MatrixHelper
 
     // Single tap
     onSingleTapUp(e: MotionEvent): boolean {
-        this.notifyViewChanged();
         for (const observer of this.observables) {
             observer.onClick(e.getX(), e.getY());
         }
+        this.notifyViewChanged();
         return true;
     }
 

@@ -5,6 +5,19 @@ import { platformApi } from 'zrender/lib/core/platform.js';
 const WidthMap = new Map<String, number>();
 
 export class Paint {
+    isFakeBoldText: boolean = false;
+    isStrikeThruText: boolean;
+    copyFrom(paint: TextPaint) {
+        const p = new Paint();
+        p.setColor(paint.getColor());
+        p.setStyle(paint.getStyle());
+        p.setStrokeWidth(paint.getStrokeWidth());
+        p.setPathEffect(paint.getPathEffect());
+        p.setTextAlign(paint.getTextAlign());
+        p.setTextSize(paint.getTextSize());
+        p.setLineWidth(paint.getLineWidth());
+        return p;
+    }
     static ANTI_ALIAS_FLAG: string = 'ANTI_ALIAS_FLAG';
 
     private color: string = Color.WHITE;
@@ -17,23 +30,23 @@ export class Paint {
 
     private align: Align = Align.LEFT;
 
-    private textSize: number = 24;
+    private textSize: number = 12;
 
     private lineWidth: number = 1;
 
-    constructor(flag: string) {}
+    constructor(flag?: string) {}
 
     measureText(text: string): number {
-        // if (WidthMap.has(text)) {
-        //     return WidthMap.get(text) || text.length;
-        // } else {
-        //     const { width } = platformApi.measureText(text);
-        //     console.log('text = ', text, ', width = ', width);
-        //     WidthMap.set(text, width);
-        //     return width;
-        // }
+        if (WidthMap.has(text)) {
+            return WidthMap.get(text) || text.length;
+        } else {
+            const { width } = platformApi.measureText(text, '12px sans-serif');
+            console.log('text = ', text, ', width = ', width);
+            WidthMap.set(text, width);
+            return width;
+        }
         // TODO 需要替换成真实的计算方法
-        return text.length * 4;
+        // return text.length * 4;
     }
 
     getColor(): string {
@@ -101,6 +114,10 @@ export class Paint {
 
     getLineWidth() {
         return this.lineWidth;
+    }
+
+    setLineWidth(lineWidth: number) {
+        this.lineWidth = lineWidth;
     }
 }
 

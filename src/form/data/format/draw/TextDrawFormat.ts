@@ -6,7 +6,7 @@ import { DrawUtils } from '../../../utils/DrawUtils';
 import type { IDrawFormat } from './IDrawFormat';
 
 export class TextDrawFormat<T> implements IDrawFormat<T> {
-    private valueMap: Map<string, string[]>;
+    protected valueMap: Map<string, string[]>;
 
     constructor() {
         this.valueMap = new Map();

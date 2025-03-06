@@ -369,7 +369,7 @@ export class TableData<T> {
                 column.setOnColumnItemClickListener((column, value, t, position) => {
                     if (this.onItemClickListener) {
                         const index = this.childColumns.indexOf(column);
-                        this.onItemClickListener(column, value, t, index, position);
+                        this.onItemClickListener.onClick(column, value, t, index, position);
                     }
                 });
             }

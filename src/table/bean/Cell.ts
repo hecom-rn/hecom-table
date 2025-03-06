@@ -15,7 +15,7 @@ export class Cell {
     private keyIndex: number = 0;
     private title: string = '';
     private richText: RichText[] | undefined = undefined;
-    private backgroundColor: string = TableConfig.INVALID_COLOR;
+    private backgroundColor: string = '#00FF00';
     private fontSize: number = 0;
     private textColor: string = TableConfig.INVALID_COLOR;
     private textAlignment: TextAlign = TextAlign.LEFT;

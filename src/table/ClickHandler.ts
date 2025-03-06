@@ -14,7 +14,7 @@ type ClickEventParams = {
 export class ClickHandler implements OnItemClickListener<Cell> {
     private table: HecomTable;
     private locker?: Locker;
-    private eventEmitter = new NativeEventEmitter(NativeModules.RCTEventEmitter);
+    // private eventEmitter = new NativeEventEmitter(NativeModules.RCTEventEmitter);
 
     constructor(table: HecomTable) {
         this.table = table;
@@ -42,7 +42,8 @@ export class ClickHandler implements OnItemClickListener<Cell> {
                 columnIndex: this.locker?.getRawCol(col) ?? col,
             };
             console.log('ClickEventParams eventParams = ', eventParams);
-
+            const { onClickEvent } = this.table?.props;
+            onClickEvent && onClickEvent(eventParams);
             // this.eventEmitter.emit('onClickEvent', {
             //     nativeEvent: eventParams,
             //     target: this.table.getNativeHandle(), // 假设 HecomTable 有获取原生句柄的方法

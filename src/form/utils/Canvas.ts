@@ -148,7 +148,8 @@ export class CanvasImpl implements Canvas {
     }
 
     drawRect2(left: number, top: number, right: number, bottom: number, paint: Paint): void {
-        console.log('drawRect', left, top, right, bottom, paint);
+        const pathStr = `M ${this.clipRectObj.left} ${this.clipRectObj.top} h ${this.clipRectObj.width} v ${this.clipRectObj.height} h ${-this.clipRectObj.width} Z`;
+        const clipRectPath = createFromString(pathStr);
         const rect = new ZRect({
             shape: {
                 x: left,
@@ -159,8 +160,9 @@ export class CanvasImpl implements Canvas {
             style: {
                 fill: paint.getColor(),
             },
+            clipPath: clipRectPath,
         });
-        // this.rootGroup.add(rect);
+        this.rootGroup.add(rect);
     }
 
     drawBitmap(bitmap: Bitmap, imgRect: Rect, drawRect: Rect, paint: Paint): void {
@@ -169,7 +171,7 @@ export class CanvasImpl implements Canvas {
 
     drawText(string: string, textCenterX: number, textCenterY: number, paint: Paint): void {
         const pathStr = `M ${Math.max(0, this.clipRectObj.left - textCenterX)} ${0} h ${this.clipRectObj.width} v ${this.clipRectObj.height} h ${-this.clipRectObj.width} Z`;
-        this.clipRectPath = createFromString(pathStr);
+        const clipRectPath = createFromString(pathStr);
         const cell = new Text({
             // draggable: true,
             x: textCenterX,
@@ -180,7 +182,7 @@ export class CanvasImpl implements Canvas {
                 fontSize: paint.getTextSize(),
                 textAlign: paint.getTextAlign(),
             },
-            clipPath: this.clipRectPath,
+            clipPath: clipRectPath,
         });
         this.rootGroup.add(cell);
     }

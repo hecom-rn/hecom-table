@@ -44,7 +44,7 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
     private showRect: Rect;
     private config: TableConfig;
     private parser: TableParser<T>;
-    private tableData: TableData<T>;
+    protected tableData: TableData<T>;
     private defaultHeight: number = 300;
     private defaultWidth: number = 300;
     private measurer: TableMeasurer<T>;
@@ -125,6 +125,8 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
 
     componentDidUpdate() {
         this.onDraw(this.canvas);
+        // this.paint.setColor('#00FF00');
+        // this.canvas.drawRect(20, 20, 200, 300, this.paint);
     }
 
     public render() {
@@ -277,7 +279,8 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
         if (this.tableData != null) {
             this.config.setZoom(scale);
             this.tableData.getTableInfo().setZoom(scale);
-            this.forceUpdate();
+            // this.forceUpdate();
+            this.onDraw(this.canvas);
         }
     }
 
