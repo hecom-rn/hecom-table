@@ -350,6 +350,7 @@ export class TableProvider<T> implements TableClickObserver {
                                     this.tipPoint.y = (top + bottom) / 2;
                                     this.tipColumn = column;
                                     this.tipPosition = j;
+                                    this.singleClickItem = false;
                                     this.clickColumn(column, j, value, data);
                                     this.isClickPoint = true;
                                     this.clickPoint.set(-Number.MAX_VALUE, -Number.MAX_VALUE);

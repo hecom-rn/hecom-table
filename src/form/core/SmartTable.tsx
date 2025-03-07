@@ -233,6 +233,7 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
             this.yAxis.setWidth(info.getYAxisWidth());
             // this.requestReMeasure();
             // this.forceUpdate();
+            this.onDraw(this.canvas);
         }
     }
 

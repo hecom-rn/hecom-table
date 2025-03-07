@@ -35,7 +35,7 @@ export class LockHelper extends Locker {
 
     protected override updateLock(column: number): void {
         if (this.locker) {
-            this.locker.needShowLockCol(column);
+            this.locker?.updateLock(column);
         }
     }
 

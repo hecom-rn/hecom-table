@@ -40,7 +40,7 @@ export class CommonLock extends Locker {
     protected updateLock(col: number): void {
         const columns: Column[] = this.table.getTableData().getColumns();
         const firstColumnMaxMerge: number = this.getFirstColMaxMerge();
-        const frozenIndex: number = this.frozenColumns;
+        const frozenIndex: number = this.frozenColumns || 0;
 
         if (firstColumnMaxMerge > 0) {
             // 处理合并列逻辑

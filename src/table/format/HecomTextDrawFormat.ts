@@ -47,6 +47,8 @@ export class HecomTextDrawFormat extends TextDrawFormat<Cell> {
 
     getIcon(column: Column, position: number): Icon {
         if (this.locker?.needShowLockRowAndCol(position, column.getColumn())) {
+            this.lockIcon.setWidth(16);
+            this.lockIcon.setHeight(16);
             if (column.isFixed()) {
                 this.lockIcon.setResourceName('icon_lock');
             } else {
@@ -138,8 +140,8 @@ export class HecomTextDrawFormat extends TextDrawFormat<Cell> {
         // const charSequence: SpannableStringBuilder = this.getSpan(cell, config, paint, maxWidth);
         
         const charSequence = cell.getTitle();
-        const width = 80;
-        const height = 40;
+        const width = 60;
+        const height = 30;
 
         return new CellCache(charSequence, width, height);
     }
