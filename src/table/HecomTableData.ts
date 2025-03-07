@@ -4,10 +4,15 @@ import { CellRange } from '../form/data/CellRange';
 import { Column } from '../form/data/column/Column';
 import type { Cell } from './bean/Cell';
 import { ArrayTableData } from '../form/data/table/ArrayTableData';
+import type { HecomTextDrawFormat } from './format/HecomTextDrawFormat';
 
 export class HecomTableData extends ArrayTableData<Cell> {
-    constructor(t: Cell[], columns: Column<Cell>[]) {
+
+    drawFormat: HecomTextDrawFormat;
+
+    constructor(t: Cell[], columns: Column<Cell>[], drawFormat: HecomTextDrawFormat) {
         super('null', t, columns);
+        this.drawFormat = drawFormat;
     }
 
     static initData(json: string): Cell[][] {
@@ -148,7 +153,7 @@ export class HecomTableData extends ArrayTableData<Cell> {
         }
     }
 
-    static create(rawData: Cell[][], format: any, drawFormat: any): HecomTableData {
+    static create(rawData: Cell[][], format: any, drawFormat: HecomTextDrawFormat): HecomTableData {
         const mergeList: CellRange[] = [];
         this.mergeTable(rawData, mergeList);
         const data = this.transformColumnArray(rawData);
@@ -171,7 +176,7 @@ export class HecomTableData extends ArrayTableData<Cell> {
         }
 
         const arrayList = data?.[0] || [];
-        const result = new HecomTableData(arrayList, columns);
+        const result = new HecomTableData(arrayList, columns, drawFormat);
         result.setUserCellRange(mergeList);
         return result;
     }

@@ -9,6 +9,7 @@ import { createFromString } from 'zrender/lib/tool/path.js';
 import { ZRender } from 'zrender/lib/zrender';
 import Path from 'zrender/lib/graphic/Path.js';
 import { ClipPath } from 'react-native-svg';
+import Image from 'zrender/lib/graphic/Image.js';
 
 class LineObj {
     start: Point;
@@ -39,6 +40,8 @@ export interface Canvas {
 
     drawBitmap(bitmap: Bitmap, imgRect: Rect, drawRect: Rect, paint: Paint): void;
 
+    drawImage(imgPath: string, imgRect: Rect, drawRect: Rect, paint: Paint): void;
+
     drawText(string: string, textCenterX: number, textCenterY: number, paint: Paint): void;
 
     getSaveCount(): number;
@@ -55,6 +58,13 @@ export interface Canvas {
 }
 
 export class CanvasImpl implements Canvas {
+    static IMAGEMAP = {
+        unSelectIcon: require('../../img/unSelectIcon.png'),
+        selected: require('../../img/selected.png'),
+        icon_lock: require('../../img/icon_lock.png'),
+        icon_unlock: require('../../img/icon_unlock.png'),
+    }
+
     zrender: ZRender;
 
     rootGroup: Group;
@@ -167,6 +177,21 @@ export class CanvasImpl implements Canvas {
 
     drawBitmap(bitmap: Bitmap, imgRect: Rect, drawRect: Rect, paint: Paint): void {
         throw new Error('Method not implemented.');
+    }
+
+
+    drawImage(imgName: string, imgRect: Rect, drawRect: Rect, paint: Paint): void {
+        const pathStr = `M ${this.clipRectObj.left} ${0} h ${this.clipRectObj.width} v ${this.clipRectObj.height} h ${-this.clipRectObj.width} Z`;
+        const clipRectPath = createFromString(pathStr);
+        
+        const image = new Image({ 
+            style: { 
+                image : CanvasImpl.IMAGEMAP[imgName], x:imgRect.left, y:imgRect.top, width:imgRect.width, height:imgRect.height, 
+
+            },
+            clipPath: clipRectPath, 
+        });
+        this.rootGroup.add(image);
     }
 
     drawText(string: string, textCenterX: number, textCenterY: number, paint: Paint): void {

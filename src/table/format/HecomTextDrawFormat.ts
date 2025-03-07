@@ -2,10 +2,11 @@ import { TableConfig } from "../../form/core/TableConfig";
 import type { CellInfo } from "../../form/data/CellInfo";
 import type { Column } from "../../form/data/column/Column";
 import { TextDrawFormat } from "../../form/data/format/draw/TextDrawFormat";
-import { Paint, type Canvas, type Rect, Align } from "../../form/utils/temp";
-import type { Cell } from "../bean/Cell";
+import { Paint, Rect, type Canvas, Align } from "../../form/utils/temp";
+import { Icon, type Cell } from "../bean/Cell";
 import { CellCache } from "../bean/CellCache";
 import type { HecomTable } from "../HecomTable";
+import type Locker from "../lock/Locker";
 
 interface IDrawFormat<T> {
     measureWidth(column: Column<T>, position: number, config: TableConfig): number;
@@ -14,6 +15,10 @@ interface IDrawFormat<T> {
 }
 
 export class HecomTextDrawFormat extends TextDrawFormat<Cell> {
+
+    locker: Locker;
+
+    lockIcon: Icon = new Icon();
     constructor() {
         super();
     }
@@ -28,13 +33,39 @@ export class HecomTextDrawFormat extends TextDrawFormat<Cell> {
         return result.getHeight();
     }
 
-    // draw(c: Canvas, rect: Rect, cellInfo: CellInfo<Cell>, config: TableConfig): void {
-    //     const cell: Cell = cellInfo.data;
-    //     if (cell.isForbidden) return;
-        
-    //     const drawWidth: number = this.drawText(c, cellInfo, rect, config);
-    //     cellInfo.data.cache.drawWidth = drawWidth;
-    // }
+    draw(c: Canvas, rect: Rect, cellInfo: CellInfo<Cell>, config: TableConfig): void {
+        const icon: Icon = this.getIcon(cellInfo.column, cellInfo.row);
+        if (!icon) {
+            super.draw(c, rect, cellInfo, config);
+            return;
+        } else {
+            const imgRect = new Rect(rect.centerX - icon.getWidth()/2, rect.centerY - icon.getHeight()/2, rect.centerX + icon.getWidth()/2, rect.centerY + icon.getHeight()/2);
+            c.drawImage(icon.getResourceName(), imgRect, rect, config.getPaint());
+        }
+
+    }
+
+    getIcon(column: Column, position: number): Icon {
+        if (this.locker?.needShowLockRowAndCol(position, column.getColumn())) {
+            if (column.isFixed()) {
+                this.lockIcon.setResourceName('icon_lock');
+            } else {
+                this.lockIcon.setResourceName('icon_unlock');
+            }
+            return this.lockIcon;
+        } else {
+            const tmp = column.getDatas()[position].getIcon();
+            if (!tmp) {
+                return undefined;
+            }
+            const icon: Icon = new Icon();
+            icon.setResourceName(tmp.name);
+            icon.setWidth(tmp.width);
+            icon.setHeight(tmp.height);
+            icon.setName(tmp.name);
+            return icon;
+        }
+    }
 
     // private drawText(c: Canvas, cellInfo: CellInfo<Cell>, rect: Rect, config: TableConfig): number {
     //     this.setTextPaint(config, cellInfo.data, this.mTextPaint, true);
@@ -107,7 +138,7 @@ export class HecomTextDrawFormat extends TextDrawFormat<Cell> {
         // const charSequence: SpannableStringBuilder = this.getSpan(cell, config, paint, maxWidth);
         
         const charSequence = cell.getTitle();
-        const width = 100;
+        const width = 80;
         const height = 40;
 
         return new CellCache(charSequence, width, height);

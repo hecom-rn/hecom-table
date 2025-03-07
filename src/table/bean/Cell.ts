@@ -15,7 +15,7 @@ export class Cell {
     private keyIndex: number = 0;
     private title: string = '';
     private richText: RichText[] | undefined = undefined;
-    private backgroundColor: string = '#00FF00';
+    private backgroundColor: string = '#FFFFFF';
     private fontSize: number = 0;
     private textColor: string = TableConfig.INVALID_COLOR;
     private textAlignment: TextAlign = TextAlign.LEFT;
@@ -315,7 +315,7 @@ class RichTextStyle {
     }
 }
 
-class Icon {
+export class Icon {
     static readonly LEFT = 0;
     static readonly TOP = 1;
     static readonly RIGHT = 2;
@@ -326,7 +326,7 @@ class Icon {
     private height: number = 0;
     private name: string = '';
     private direction: number = Icon.RIGHT;
-    private resourceId: number = -1;
+    private resourceName: string = '';
 
     getDirection(): number {
         return this.direction;
@@ -336,12 +336,12 @@ class Icon {
         this.direction = direction;
     }
 
-    getResourceId(): number {
-        return this.resourceId;
+    getResourceName(): string {
+        return this.resourceName;
     }
 
-    setResourceId(resourceId: number): void {
-        this.resourceId = resourceId;
+    setResourceName(resourceName: string): void {
+        this.resourceName = resourceName;
     }
 
     getPath(): Path | null {

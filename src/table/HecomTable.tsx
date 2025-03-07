@@ -44,6 +44,9 @@ export class HecomTable extends SmartTable<Cell> {
         this.getConfig().setFixedLines(frozenRows);
         this.mLockHelper.setFrozenColumns(frozenColumns);
         this.mLockHelper.reLock(tableData);
+        if (this.tableData instanceof HecomTableData) {
+         (this.tableData as HecomTableData).drawFormat.locker = this.mLockHelper;
+        }
         super.componentDidUpdate();
     }
 
