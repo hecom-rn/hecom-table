@@ -61,10 +61,32 @@ export interface Canvas {
 
 export class CanvasImpl implements Canvas {
     static IMAGEMAP = {
-        unSelectIcon: require('../../img/unSelectIcon.png'),
-        selected: require('../../img/selected.png'),
+        collapsedIcon: require('../../img/collapsedIcon.png'),
+        copy_disable: require('../../img/copy_disable.png'),
+        copy: require('../../img/copy.png'),
+        dot_delete: require('../../img/dot_delete.png'),
+        dot_edit: require('../../img/dot_edit.png'),
+        dot_new: require('../../img/dot_new.png'),
+        dot_readonly: require('../../img/dot_readonly.png'),
+        dot_select: require('../../img/dot_select.png'),
+        dot_white: require('../../img/dot_white.png'),
+        down: require('../../img/down.png'),
+        edit_disable: require('../../img/edit_disable.png'),
+        edit: require('../../img/edit.png'),
+        expandedIcon: require('../../img/expandedIcon.png'),
         icon_lock: require('../../img/icon_lock.png'),
         icon_unlock: require('../../img/icon_unlock.png'),
+        normal: require('../../img/normal.png'),
+        portal_icon: require('../../img/portal_icon.png'),
+        revert: require('../../img/revert.png'),
+        selected: require('../../img/selected.png'),
+        selectedIcon: require('../../img/selectedIcon.png'),
+        trash_disable: require('../../img/trash_disable.png'),
+        trash: require('../../img/trash.png'),
+        unselected_disable: require('../../img/unselected_disable.png'),
+        unselected: require('../../img/unselected.png'),
+        unSelectIcon: require('../../img/unSelectIcon.png'),
+        up: require('../../img/up.png'),
     }
 
     zrender: ZRender;
@@ -181,7 +203,6 @@ export class CanvasImpl implements Canvas {
         throw new Error('Method not implemented.');
     }
 
-
     drawImage(imgName: string, imgRect: Rect, drawRect: Rect, paint: Paint): void {
         const pathStr = `M ${this.clipRectObj.left} ${0} h ${this.clipRectObj.width} v ${this.clipRectObj.height} h ${-this.clipRectObj.width} Z`;
         const clipRectPath = createFromString(pathStr);
@@ -215,7 +236,7 @@ export class CanvasImpl implements Canvas {
     }
 
     drawTextInRect(string: string, rect: Rect, paint: Paint): void {
-        const pathStr = `M ${Math.max(0, this.clipRectObj.left)} ${0} h ${this.clipRectObj.width} v ${this.clipRectObj.height} h ${-this.clipRectObj.width} Z`;
+        const pathStr = `M ${Math.max(rect.left, this.clipRectObj.left)} ${0} h ${this.clipRectObj.width} v ${this.clipRectObj.height} h ${-this.clipRectObj.width} Z`;
         const clipRectPath = createFromString(pathStr);
         let x = 0;
         switch(paint.getTextAlign()) {

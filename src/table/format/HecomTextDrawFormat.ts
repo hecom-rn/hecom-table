@@ -241,6 +241,7 @@ export class HecomTextDrawFormat extends TextDrawFormat<Cell> {
         } else {
             width = Math.max(icon.getWidth(), textWidth) + paddingHorizontal;
         }
+        width = Math.min(width, 120); // 暂时固定一个最大宽度，后续适配换行等功能
         const height = config.getPaint().getTextSize() + 8; // 临时计算高度，后续需要替换
         return new CellCache(charSequence, width, height);
     }
