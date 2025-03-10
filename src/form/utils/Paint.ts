@@ -40,7 +40,7 @@ export class Paint {
         if (WidthMap.has(text)) {
             return WidthMap.get(text) || text.length;
         } else {
-            const { width } = platformApi.measureText(text, '12px sans-serif');
+            const { width } = platformApi.measureText(text, `${this.getTextSize()}px sans-serif`);
             console.log('text = ', text, ', width = ', width);
             WidthMap.set(text, width);
             return width;

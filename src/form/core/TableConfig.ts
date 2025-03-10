@@ -31,8 +31,8 @@ export class TableConfig {
     private textLeftOffset: number = 0;
     private sequenceHorizontalPadding: number = 40;
     private columnTitleVerticalPadding: number = 10;
-    private columnTitleHorizontalPadding: number = 40;
-    private horizontalPadding: number = 40;
+    private columnTitleHorizontalPadding: number = 6;
+    private horizontalPadding: number = 4;
     private columnTitleBackground?: IBackgroundFormat;
     private contentBackground?: IBackgroundFormat;
     private countBackground?: IBackgroundFormat;

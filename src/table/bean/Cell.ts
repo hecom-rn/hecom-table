@@ -5,7 +5,7 @@ import type { ProgressStyle } from './ProgressStyle';
 import { Color } from '../../form/utils/Paint';
 import { HecomGridFormat } from '../format/HecomGridFormat';
 
-enum TextAlign {
+export enum TextAlign {
     LEFT = 0,
     CENTER = 1,
     RIGHT = 2,

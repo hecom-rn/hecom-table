@@ -1,6 +1,6 @@
 /* eslint-disable no-dupe-class-members */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Point, Rect, type Bitmap, type Paint } from './temp';
+import { Align, Point, Rect, type Bitmap, type Paint } from './temp';
 import ZRect from 'zrender/lib/graphic/shape/Rect';
 import Text from 'zrender/lib/graphic/Text';
 import Line from 'zrender/lib/graphic/shape/Line';
@@ -43,6 +43,8 @@ export interface Canvas {
     drawImage(imgPath: string, imgRect: Rect, drawRect: Rect, paint: Paint): void;
 
     drawText(string: string, textCenterX: number, textCenterY: number, paint: Paint): void;
+
+    drawTextInRect(string: string, rect: Rect, paint: Paint): void;
 
     getSaveCount(): number;
 
@@ -206,6 +208,36 @@ export class CanvasImpl implements Canvas {
                 fill: paint.getColor(),
                 fontSize: paint.getTextSize(),
                 textAlign: paint.getTextAlign(),
+            },
+            clipPath: clipRectPath,
+        });
+        this.rootGroup.add(cell);
+    }
+
+    drawTextInRect(string: string, rect: Rect, paint: Paint): void {
+        const pathStr = `M ${Math.max(0, this.clipRectObj.left)} ${0} h ${this.clipRectObj.width} v ${this.clipRectObj.height} h ${-this.clipRectObj.width} Z`;
+        const clipRectPath = createFromString(pathStr);
+        let x = 0;
+        switch(paint.getTextAlign()) {
+            case Align.LEFT:
+                x = rect.left;
+                break;
+            case Align.CENTER:
+                x = rect.centerX;
+                break;
+            case Align.RIGHT:
+                x = rect.right;
+                break;
+        }
+
+        const cell = new Text({
+            style: {
+                x,
+                y: rect.top,
+                text: string,
+                fill: paint.getColor(),
+                fontSize: paint.getTextSize(),
+                align: paint.getTextAlign(),
             },
             clipPath: clipRectPath,
         });

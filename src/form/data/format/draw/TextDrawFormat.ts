@@ -1,9 +1,10 @@
-import { type Canvas, Paint, Rect } from '../../../utils/temp';
+import { Align, type Canvas, Paint, Rect } from '../../../utils/temp';
 import { TableConfig } from '../../../core/TableConfig';
 import { CellInfo } from '../../CellInfo';
 import { Column } from '../../column/Column';
 import { DrawUtils } from '../../../utils/DrawUtils';
 import type { IDrawFormat } from './IDrawFormat';
+import { Cell, TextAlign } from '../../../../table/bean/Cell';
 
 export class TextDrawFormat<T> implements IDrawFormat<T> {
     protected valueMap: Map<string, string[]>;
@@ -42,6 +43,20 @@ export class TextDrawFormat<T> implements IDrawFormat<T> {
         const backgroundFormat = config.getContentCellBackgroundFormat();
         if (backgroundFormat != null && backgroundFormat.getTextColor(cellInfo) !== TableConfig.INVALID_COLOR) {
             paint.setColor(backgroundFormat.getTextColor(cellInfo));
+        }
+        if (cellInfo.data instanceof Cell) {
+            switch ((cellInfo.data as Cell).getTextAlignment()) {
+                case TextAlign.LEFT:
+                    paint.setTextAlign(Align.LEFT);
+                    break;
+                case TextAlign.RIGHT:
+                    paint.setTextAlign(Align.RIGHT);
+                    break;
+                case TextAlign.CENTER:
+                    paint.setTextAlign(Align.CENTER);
+                    break;
+            }
+            
         }
         paint.setTextSize(paint.getTextSize() * config.getZoom());
     }

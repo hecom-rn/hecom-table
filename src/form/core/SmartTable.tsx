@@ -216,7 +216,6 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
     public setTableData(tableData: TableData<T>): void {
         if (tableData != null) {
             this.tableData = tableData;
-            this.notifyDataChanged();
         }
     }
 

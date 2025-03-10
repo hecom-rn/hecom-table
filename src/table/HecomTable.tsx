@@ -50,6 +50,7 @@ export class HecomTable extends SmartTable<Cell> {
         if (this.tableData instanceof HecomTableData) {
          (this.tableData as HecomTableData).drawFormat.locker = this.mLockHelper;
         }
+        this.notifyDataChanged();
         super.componentDidUpdate();
     }
 

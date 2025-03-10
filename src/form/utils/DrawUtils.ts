@@ -94,13 +94,20 @@ export class DrawUtils {
     }
 
     public static drawMultiText(canvas: Canvas, paint: Paint, rect: Rect, values: string[]): void {
+        const lineHeight = DrawUtils.getTextHeight(paint);
         for (let i = 0; i < values.length; i++) {
             const centerY =
-                (rect.bottom + rect.top) / 2 + (values.length / 2 - i - 0.5) * DrawUtils.getTextHeight(paint);
-            canvas.drawText(
+                (rect.bottom + rect.top) / 2 + (values.length / 2 - i - 0.5) * lineHeight;
+            // canvas.drawText(
+            //     values[values.length - i - 1],
+            //     this.getTextCenterX(rect.left, rect.right, paint),
+            //     this.getTextCenterY(centerY, paint),
+            //     paint
+            // );
+            
+            canvas.drawTextInRect(
                 values[values.length - i - 1],
-                this.getTextCenterX(rect.left, rect.right, paint),
-                this.getTextCenterY(centerY, paint),
+                new Rect(rect.left, centerY - lineHeight/2 , rect.right, centerY + lineHeight/2),
                 paint
             );
         }
@@ -135,10 +142,16 @@ export class DrawUtils {
     }
 
     public static drawSingleText(canvas: Canvas, paint: Paint, rect: Rect, value: string): void {
-        canvas.drawText(
+        // canvas.drawText(
+        //     value,
+        //     this.getTextCenterX(rect.left, rect.right, paint),
+        //     this.getTextCenterY(rect.centerY, paint),
+        //     paint
+        // );
+
+        canvas.drawTextInRect(
             value,
-            this.getTextCenterX(rect.left, rect.right, paint),
-            this.getTextCenterY(rect.centerY, paint),
+            rect,
             paint
         );
     }
