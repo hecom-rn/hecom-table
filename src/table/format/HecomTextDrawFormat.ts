@@ -2,6 +2,7 @@ import { TableConfig } from "../../form/core/TableConfig";
 import type { CellInfo } from "../../form/data/CellInfo";
 import type { Column } from "../../form/data/column/Column";
 import { TextDrawFormat } from "../../form/data/format/draw/TextDrawFormat";
+import { DrawUtils } from "../../form/utils/DrawUtils";
 import { Paint, Rect, type Canvas, Align, CanvasImpl } from "../../form/utils/temp";
 import { Icon, TextAlign, type Cell } from "../bean/Cell";
 import { CellCache } from "../bean/CellCache";
@@ -44,7 +45,7 @@ export class HecomTextDrawFormat extends TextDrawFormat<Cell> {
         rect.top +=  (this.getPaddingTop(cellInfo.data, config) * config.getZoom());
         rect.bottom -= (this.getPaddingBottom(cellInfo.data, config) * config.getZoom());
         if (!icon) {
-            super.draw(c, rect, cellInfo, config);
+            this._hecomdrawText(c, rect, cellInfo, config);
             return;
         } else {
 
@@ -68,7 +69,7 @@ export class HecomTextDrawFormat extends TextDrawFormat<Cell> {
                 case Icon.LEFT:
                     textRect = new Rect(rect.left + (imgWidth + drawPadding), rect.top, rect.right,
                             rect.bottom);
-                    super.draw(c, textRect, cellInfo, config);
+                    this._hecomdrawText(c, textRect, cellInfo, config);
                     textWidth = (this.getDrawWidth(cellInfo) - icon.getWidth()) * config.getZoom();
                     switch (textAlign) { //单元格内容的对齐方式
                         case TextAlign.CENTER:
@@ -88,7 +89,7 @@ export class HecomTextDrawFormat extends TextDrawFormat<Cell> {
                 case Icon.RIGHT:
                     textRect = new Rect(rect.left, rect.top, rect.right - (imgWidth + drawPadding),
                             rect.bottom);
-                    super.draw(c, textRect, cellInfo, config);
+                    this._hecomdrawText(c, textRect, cellInfo, config);
                     textWidth = (this.getDrawWidth(cellInfo) - icon.getWidth()) * config.getZoom();
                     switch (textAlign) { //单元格内容的对齐方式
                         case TextAlign.CENTER:
@@ -108,7 +109,7 @@ export class HecomTextDrawFormat extends TextDrawFormat<Cell> {
                 case Icon.TOP:
                     textRect = new Rect(rect.left, rect.top + (imgHeight + drawPadding) / 2, rect.right,
                             rect.bottom);
-                    super.draw(c, textRect, cellInfo, config);
+                    this._hecomdrawText(c, textRect, cellInfo, config);
                     const imgBottom: number = (rect.top + rect.bottom) / 2 - this.getDrawHeight(cellInfo) / 2 + drawPadding;
                     textRect.set(rect.left, imgBottom - imgHeight, rect.right, imgBottom);
                     this.drawImg(c, textRect, cellInfo, config);
@@ -116,18 +117,25 @@ export class HecomTextDrawFormat extends TextDrawFormat<Cell> {
                 case Icon.BOTTOM:
                     textRect = new Rect(rect.left, rect.top, rect.right, rect.bottom - (imgHeight +
                             drawPadding) / 2);
-                    super.draw(c, textRect, cellInfo, config);
+                    this._hecomdrawText(c, textRect, cellInfo, config);
                     const imgTop: number = (rect.top + rect.bottom) / 2 + this.getDrawHeight(cellInfo) / 2 - drawPadding;
                     textRect.set(rect.left, imgTop, rect.right, imgTop + imgHeight);
                     this.drawImg(c, textRect, cellInfo, config);
                     break;
     
             }
-
-            // const imgRect = new Rect(rect.centerX - icon.getWidth()/2, rect.centerY - icon.getHeight()/2, rect.centerX + icon.getWidth()/2, rect.centerY + icon.getHeight()/2);
-            // c.drawImage(icon.getResourceName(), imgRect, rect, config.getPaint());
         }
 
+    }
+
+    _hecomdrawText(c: Canvas, rect: Rect, cellInfo: CellInfo<Cell>, config: TableConfig): void {
+        const paint = config.getPaint();
+        this.setTextPaint(config, cellInfo, paint);
+        if (cellInfo.column.getTextAlign() != null) {
+            paint.setTextAlign(cellInfo.column.getTextAlign());
+        }
+        // this.drawText(c, cellInfo.value, rect, paint);
+        DrawUtils.drawMultiText(c, paint, rect, cellInfo.data?.getCache()?.getStrArr() || []);
     }
 
     drawImg(c: Canvas, rect: Rect, cellInfo: CellInfo<Cell>, config: TableConfig): void {
@@ -167,48 +175,6 @@ export class HecomTextDrawFormat extends TextDrawFormat<Cell> {
         }
     }
 
-    // private drawText(c: Canvas, cellInfo: CellInfo<Cell>, rect: Rect, config: TableConfig): number {
-    //     this.setTextPaint(config, cellInfo.data, this.mTextPaint, true);
-    //     const result: CellCache = this.getCellCache(cellInfo.column, cellInfo.row, this.mTextPaint, config);
-    //     const saveCount: number = c.saveCount;
-    //     c.save();
-        
-    //     const textAlign: PaintAlign = this.mTextPaint.textAlign;
-    //     this.mTextPaint.textAlign = PaintAlign.Left;
-
-    //     let align: LayoutAlignment;
-    //     switch (textAlign) {
-    //         case Align.LEFT:
-    //         default:
-    //             align = LayoutAlignment.ALIGN_NORMAL;
-    //             break;
-    //         case Align.CENTER:
-    //             align = LayoutAlignment.ALIGN_CENTER;
-    //             break;
-    //         case Align.RIGHT:
-    //             align = LayoutAlignment.ALIGN_OPPOSITE;
-    //             break;
-    //     }
-
-    //     const layout: StaticLayout = new StaticLayout(
-    //         result.text,
-    //         this.mTextPaint,
-    //         rect.width(),
-    //         align,
-    //         1.0,
-    //         0.0,
-    //         false
-    //     );
-
-    //     const dy: number = (rect.height() - layout.height) / 2;
-    //     c.clipRect(rect);
-    //     c.translate(rect.left, rect.top + dy);
-    //     layout.draw(c);
-    //     c.restoreToCount(saveCount);
-
-    //     return layout.lineWidths.reduce((max, curr) => Math.max(max, curr), 0);
-    // }
-
     private getDrawWidth(cellInfo: CellInfo<Cell> ): number {
         return cellInfo.data?.getCache()?.getWidth() || 0;
     }
@@ -241,11 +207,27 @@ export class HecomTextDrawFormat extends TextDrawFormat<Cell> {
         } else {
             width = Math.max(icon.getWidth(), textWidth) + paddingHorizontal;
         }
-        width = Math.min(width, 120); // 暂时固定一个最大宽度，后续适配换行等功能
-        const height = config.getPaint().getTextSize() + 8; // 临时计算高度，后续需要替换
-        return new CellCache(charSequence, width, height);
+        const height = config.getPaint().getTextSize() + 4; // 临时计算高度，后续需要替换
+        const MAX_WIDTH = 120; // 临时固定一个最大宽度，后续适配换行等功能
+        if (width > MAX_WIDTH) {
+            const maxTextWidth = this.getMaxTextWidth(icon, paddingHorizontal, MAX_WIDTH);
+            const stringArr: string[] = config.getPaint().splitTextWithMaxWidth(charSequence, maxTextWidth);
+            return new CellCache(charSequence, stringArr, MAX_WIDTH, height * stringArr?.length);
+        } else {
+            width = Math.min(width, MAX_WIDTH); 
+            return new CellCache(charSequence, [charSequence], width, height);
+        }
     }
 
+    private getMaxTextWidth(icon: Icon, paddingHorizontal: number, maxWidth: number): number {
+        if (!icon) {
+            return maxWidth - paddingHorizontal;
+        } else if (icon.getDirection() == Icon.LEFT || icon.getDirection() == Icon.RIGHT) {
+            return maxWidth - icon.getWidth() - this.drawPadding - paddingHorizontal;
+        } else {
+            return maxWidth - paddingHorizontal;
+        }
+    }
 
     private getPaddingLeft( cell: Cell,  config: TableConfig): number {
         if (cell.getTextPaddingLeft() >= 0) {

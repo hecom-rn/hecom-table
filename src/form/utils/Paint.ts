@@ -45,8 +45,50 @@ export class Paint {
             WidthMap.set(text, width);
             return width;
         }
-        // TODO 需要替换成真实的计算方法
-        // return text.length * 4;
+    }
+
+    splitTextWithMaxWidth(text: string, maxWidth: number): string[] {
+        const result: string[] = [];
+        // 预处理：按换行符拆分成段落
+        const paragraphs = text.split('\n');
+
+        for (const paragraph of paragraphs) {
+            let lineBuffer = '';
+            let lineWidth = 0;
+
+            for (const char of paragraph) {
+                // 获取字符宽度（优先查表，默认逻辑：全角=2，半角=1）
+                const charWidth = this.measureText(char);
+
+                // 触发换行条件
+                if (lineWidth + charWidth > maxWidth) {
+                    // 寻找最近的切割点（空格/标点）
+                    const lastSpaceIndex = Math.max(
+                        lineBuffer.lastIndexOf(' '),
+                        lineBuffer.lastIndexOf(','),
+                        lineBuffer.lastIndexOf('。')
+                    );
+
+                    if (lastSpaceIndex > 0) { // 找到自然分割点
+                        result.push(lineBuffer.slice(0, lastSpaceIndex + 1));
+                        lineBuffer = lineBuffer.slice(lastSpaceIndex + 1);
+                        lineWidth = [...lineBuffer].reduce((sum, c) => 
+                            sum + this.measureText(c), 0);
+                    } else { // 强制截断
+                        result.push(lineBuffer);
+                        lineBuffer = '';
+                        lineWidth = 0;
+                    }
+                }
+
+                lineBuffer += char;
+                lineWidth += charWidth;
+            }
+
+            if (lineBuffer) result.push(lineBuffer);
+        }
+
+        return result;
     }
 
     getColor(): string {

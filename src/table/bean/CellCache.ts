@@ -6,6 +6,7 @@
  */
 export class CellCache {
     private readonly text: string;
+    private readonly strArr: string[];
     private readonly width: number;
     private readonly height: number;
     private drawWidth: number;
@@ -16,8 +17,9 @@ export class CellCache {
      * @param width 单元格宽度
      * @param height 单元格高度
      */
-    constructor(text: string, width: number, height: number) {
+    constructor(text: string, stringArr: string[], width: number, height: number) {
         this.text = text;
+        this.strArr = stringArr;
         this.width = width;
         this.height = height;
         this.drawWidth = 0; // 初始化绘制宽度为0
@@ -35,6 +37,10 @@ export class CellCache {
      */
     public getText(): string {
         return this.text;
+    }
+
+    public getStrArr(): string[] {
+        return this.strArr;
     }
 
     /**
