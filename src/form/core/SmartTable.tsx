@@ -20,9 +20,8 @@ import { TableConfig } from './TableConfig';
 import { SVGRenderer } from '../../svg/SVGRenderer';
 import * as zrender from 'zrender/lib/zrender';
 import { type ZRenderType } from 'zrender/lib/zrender';
-import { Dimensions, View, type ViewProps } from 'react-native';
+import { Dimensions, View } from 'react-native';
 import SvgChart from '../../svg/svgChart';
-import Text from 'zrender/lib/graphic/Text';
 import { HecomGridFormat } from '../../table/format/HecomGridFormat';
 import type SmartTableProps from './SmartTableProps';
 
@@ -124,9 +123,8 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
     }
 
     componentDidUpdate() {
-        this.onDraw(this.canvas);
-        // this.paint.setColor('#00FF00');
-        // this.canvas.drawRect(20, 20, 200, 300, this.paint);
+        this.initTableData();
+        this.notifyDataChanged();
     }
 
     public render() {
@@ -149,6 +147,10 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
     protected initTableData() {
         const { tableData } = this.props;
         const { width, height } = this.getWidthAndHeight();
+        this.zrender.resize({
+            width,
+            height,
+        });
         this.setTableData(tableData);
         this.showRect = new Rect(0, 0, width, height);
     }
@@ -168,7 +170,7 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
                 const scaleRect = this.matrixHelper.getZoomProviderRect(
                     this.showRect,
                     rect,
-                    this.tableData.getTableInfo()
+                    this.tableData.getTableInfo(),
                 );
 
                 try {
@@ -193,7 +195,7 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
                     Math.max(showRect.top, scaleRect.top),
                     Math.min(showRect.right, scaleRect.right),
                     Math.min(scaleRect.bottom, showRect.bottom),
-                    this.paint
+                    this.paint,
                 );
         }
     }

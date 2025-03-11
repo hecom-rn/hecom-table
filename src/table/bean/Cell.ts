@@ -12,6 +12,31 @@ export enum TextAlign {
 }
 
 export class Cell {
+    public static fromJson(json: Cell) {
+        const cell = new Cell();
+
+        cell.setKeyIndex(json.keyIndex);
+        cell.setTitle(json.title);
+        cell.setRichText(RichText.fromJson(json.richText));
+        cell.setBackgroundColor(json.backgroundColor);
+        cell.setFontSize(json.fontSize);
+        cell.setTextColor(json.textColor);
+        cell.setTextAlignment(json.textAlignment);
+        cell.setIcon(Icon.fromJson(json.icon));
+        cell.setOverstriking(json._isOverstriking);
+        cell.setForbidden(json._isForbidden);
+        cell.setClassificationLinePosition(json.classificationLinePosition);
+        cell.setClassificationLineColor(json.classificationLineColor);
+        cell.setBoxLineColor(json.boxLineColor);
+        cell.setStrikethrough(json.strikethrough);
+        cell.setExtraText(json.extraText);
+        cell.setTextPaddingLeft(json.textPaddingLeft);
+        cell.setTextPaddingRight(json.textPaddingRight);
+        cell.setTextPaddingHorizontal(json.textPaddingHorizontal);
+
+        return cell;
+    }
+
     private keyIndex: number = 0;
     private title: string = '';
     private richText: RichText[] | undefined = undefined;
@@ -33,7 +58,7 @@ export class Cell {
     private extraText: ExtraText | null = null; // 后缀标签
     private cache: CellCache | null = null;
 
-    getRichText(): RichText[] {
+    getRichText(): RichText[] | undefined {
         return this.richText;
     }
 
@@ -102,7 +127,7 @@ export class Cell {
         this.textPaddingLeft = textPaddingLeft;
     }
 
-    setRichText(richText: RichText[]): void {
+    setRichText(richText?: RichText[]): void {
         this.richText = richText;
     }
 
@@ -110,7 +135,7 @@ export class Cell {
         return this.extraText;
     }
 
-    setExtraText(extraText: ExtraText): void {
+    setExtraText(extraText: ExtraText| null): void {
         this.extraText = extraText;
     }
 
@@ -202,7 +227,7 @@ export class Cell {
         return this.icon;
     }
 
-    setIcon(icon: Icon): void {
+    setIcon(icon: Icon | null): void {
         this.icon = icon;
     }
 
@@ -235,8 +260,19 @@ class RichText {
         return this.style;
     }
 
-    setStyle(style: RichTextStyle): void {
+    setStyle(style: RichTextStyle | null): void {
         this.style = style;
+    }
+
+    static fromJson(richText: RichText[] | undefined) {
+        if (!richText) return undefined;
+
+        return richText.map((item) => {
+            const i = new RichText();
+            i.setText(item.text);
+            i.setStyle(RichTextStyle.fromJson(item.style));
+            return i;
+        });
     }
 }
 
@@ -312,6 +348,20 @@ class RichTextStyle {
 
     setBorderWidth(borderWidth: number): void {
         this.borderWidth = borderWidth;
+    }
+
+    static fromJson(style: RichTextStyle | null) {
+        if (!style) return null;
+        const s = new RichTextStyle();
+        s.setTextColor(style.textColor);
+        s.setBackgroundColor(style.backgroundColor);
+        s.setFontSize(style.fontSize);
+        s.setBorderRadius(style.borderRadius);
+        s.setBorderColor(style.borderColor);
+        s.setBorderWidth(style.borderWidth);
+        s.setOverstriking(style.isOverstriking!);
+        s.setStrikethrough(style.strikethrough!);
+        return s;
     }
 }
 
@@ -411,6 +461,18 @@ export class Icon {
                 this.direction = iconConfig.direction;
             }
         }
+    }
+
+    static fromJson(icon: Icon | null) {
+        if (!icon) return null;
+        const i = new Icon();
+        i.setPath(icon.path!);
+        i.setWidth(icon.width);
+        i.setHeight(icon.height);
+        i.setName(icon.name);
+        i.setDirection(icon.direction);
+        i.setResourceName(icon.resourceName);
+        return i;
     }
 }
 

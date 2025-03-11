@@ -2,12 +2,11 @@ import { MergeBean } from './bean/MergeBean';
 import type { TableConfigBean } from './bean/TableConfigBean';
 import { CellRange } from '../form/data/CellRange';
 import { Column } from '../form/data/column/Column';
-import type { Cell } from './bean/Cell';
+import { Cell } from './bean/Cell';
 import { ArrayTableData } from '../form/data/table/ArrayTableData';
 import type { HecomTextDrawFormat } from './format/HecomTextDrawFormat';
 
 export class HecomTableData extends ArrayTableData<Cell> {
-
     drawFormat: HecomTextDrawFormat;
 
     constructor(t: Cell[], columns: Column<Cell>[], drawFormat: HecomTextDrawFormat) {
@@ -151,6 +150,18 @@ export class HecomTableData extends ArrayTableData<Cell> {
             mergeBean.setMergeColumn(true);
             mergeBean.setEndColum(index - 1);
         }
+    }
+
+    static createFromJson(json: Cell[][], format: any, drawFormat: HecomTextDrawFormat): HecomTableData {
+        const cells: Cell[][] = [];
+        json.forEach((row) => {
+            const rowCells: Cell[] = [];
+            row.forEach((cell) => {
+                rowCells.push(Cell.fromJson(cell));
+            });
+            cells.push(rowCells);
+        });
+        return HecomTableData.create(cells, format, drawFormat);
     }
 
     static create(rawData: Cell[][], format: any, drawFormat: HecomTextDrawFormat): HecomTableData {

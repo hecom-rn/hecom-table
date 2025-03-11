@@ -8,8 +8,8 @@ import Group from 'zrender/lib/graphic/Group';
 import { createFromString } from 'zrender/lib/tool/path.js';
 import { ZRender } from 'zrender/lib/zrender';
 import Path from 'zrender/lib/graphic/Path.js';
-import { ClipPath } from 'react-native-svg';
 import Image from 'zrender/lib/graphic/Image.js';
+import { PixelRatio, Platform } from 'react-native';
 
 class LineObj {
     start: Point;
@@ -96,6 +96,8 @@ export class CanvasImpl implements Canvas {
     clipRectPath: Path;
 
     clipRectObj: Rect;
+
+    dp: number = Platform.OS === 'harmony' ? PixelRatio.get() : 1;
 
     constructor(zrender: ZRender) {
         this.zrender = zrender;
@@ -206,15 +208,19 @@ export class CanvasImpl implements Canvas {
     drawImage(imgName: string, imgRect: Rect, drawRect: Rect, paint: Paint): void {
         const pathStr = `M ${this.clipRectObj.left} ${0} h ${this.clipRectObj.width} v ${this.clipRectObj.height} h ${-this.clipRectObj.width} Z`;
         const clipRectPath = createFromString(pathStr);
-        
-        const image = new Image({ 
-            style: { 
-                image : CanvasImpl.IMAGEMAP[imgName], x:imgRect.left, y:imgRect.top, width:imgRect.width, height:imgRect.height, 
+
+        const image = new Image({
+            style: {
+                image : CanvasImpl.IMAGEMAP[imgName], x:imgRect.left, y:imgRect.top, width:imgRect.width, height:imgRect.height,
 
             },
-            clipPath: clipRectPath, 
+            clipPath: clipRectPath,
         });
         this.rootGroup.add(image);
+    }
+
+    private getTextSize(paint: Paint): number {
+        return paint.getTextSize() * this.dp;
     }
 
     drawText(string: string, textCenterX: number, textCenterY: number, paint: Paint): void {
@@ -227,7 +233,7 @@ export class CanvasImpl implements Canvas {
             style: {
                 text: string,
                 fill: paint.getColor(),
-                fontSize: paint.getTextSize(),
+                fontSize: this.getTextSize(paint),
                 textAlign: paint.getTextAlign(),
             },
             clipPath: clipRectPath,
@@ -257,7 +263,7 @@ export class CanvasImpl implements Canvas {
                 y: rect.top,
                 text: string,
                 fill: paint.getColor(),
-                fontSize: paint.getTextSize(),
+                fontSize: this.getTextSize(paint),
                 align: paint.getTextAlign(),
             },
             clipPath: clipRectPath,
