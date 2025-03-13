@@ -17,20 +17,19 @@ import { MatrixHelper, MotionEvent, ScaleGestureDetector } from '../matrix/Matri
 import { TableMeasurer } from './TableMeasurer';
 import { TableParser } from './TableParser';
 import { TableConfig } from './TableConfig';
-import { SVGRenderer } from '../../svg/SVGRenderer';
+import { SkiaRenderer } from '../../skia/SkiaRenderer';
 import * as zrender from 'zrender/lib/zrender';
 import { type ZRenderType } from 'zrender/lib/zrender';
 import { Dimensions, View } from 'react-native';
-import SvgChart from '../../svg/svgChart';
 import { HecomGridFormat } from '../../table/format/HecomGridFormat';
 import type SmartTableProps from './SmartTableProps';
+import SkiaChart from '../../skia/skiaChart';
 
 // interface TableProps<T> extends ViewProps {
 //     isYSequenceRight: boolean;
 //     tableData?: TableData<T>;
 // }
-
-SVGRenderer(zrender);
+SkiaRenderer(zrender);
 
 /**
  * 表格组件
@@ -83,7 +82,7 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
     componentDidMount() {
         // 初始化 ZRender 实例
         this.zrender = zrender.init(this.containerRef, {
-            renderer: 'svg',
+            renderer: 'skia',
         });
         const { width, height } = this.getWidthAndHeight();
         this.zrender.resize({
@@ -130,9 +129,9 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
     public render() {
         return (
             <View style={this.props.style}>
-                <SvgChart
+                <SkiaChart
                     useRNGH
-                    ref={(ref: SvgChart) => (this.containerRef = ref)}
+                    ref={(ref) => (this.containerRef = ref)}
                     style={{ backgroundColor: 'white' }}
                 />
             </View>

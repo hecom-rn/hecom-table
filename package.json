@@ -93,6 +93,7 @@
     "react-native": "*",
     "react-native-gesture-handler": "*",
     "react-native-svg": "*",
+    "react-native-skia": "*",
     "zrender": "*"
   },
   "packageManager": "yarn@3.6.1",
