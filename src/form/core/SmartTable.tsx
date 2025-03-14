@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { ScrollView, StyleSheet } from 'react-native';
 import { Align, type Canvas, CanvasImpl, Paint, Rect, TextPaint } from '../utils/temp';
 import { Direction } from '../component/IComponent';
 import type { ITableTitle } from '../component/ITableTitle';
@@ -18,11 +19,13 @@ import { TableMeasurer } from './TableMeasurer';
 import { TableParser } from './TableParser';
 import { TableConfig } from './TableConfig';
 import { SkiaRenderer } from '../../skia/SkiaRenderer';
+import TMPJSTable from '../../tmpjstable/Table';
 import * as zrender from 'zrender/lib/zrender';
 import { type ZRenderType } from 'zrender/lib/zrender';
 import { Dimensions, View } from 'react-native';
 import { HecomGridFormat } from '../../table/format/HecomGridFormat';
 import type SmartTableProps from './SmartTableProps';
+import { Table, Row, Rows, TableWrapper, Col, Cell } from '../../reanimatetable/index';
 import SkiaChart from '../../skia/skiaChart';
 
 // interface TableProps<T> extends ViewProps {
@@ -81,44 +84,47 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
 
     componentDidMount() {
         // 初始化 ZRender 实例
-        this.zrender = zrender.init(this.containerRef, {
-            renderer: 'skia',
-        });
-        const { width, height } = this.getWidthAndHeight();
-        this.zrender.resize({
-            width,
-            height,
-        });
-        this.canvas = new CanvasImpl(this.zrender);
-        this.zrender.on('mousedown', (e) => {
-            this.matrixHelper.handlerTouchEvent(new MotionEvent(MotionEvent.ACTION_DOWN, e.offsetX, e.offsetY, 1, 1));
-        });
-        this.zrender.on('mousemove', (e) => {
-            this.matrixHelper.handlerTouchEvent(new MotionEvent(MotionEvent.ACTION_MOVE, e.offsetX, e.offsetY, 1, 1));
-        });
-        this.zrender.on('mouseup', (e) => {
-            this.matrixHelper.handlerTouchEvent(new MotionEvent(MotionEvent.ACTION_UP, e.offsetX, e.offsetY, 1, 1));
-        });
-        this.zrender.on('mousewheel', (e) => {
-            switch (e.event.zrStatus) {
-                case 'pinchBegin':
-                    this.matrixHelper.onScaleBegin(new ScaleGestureDetector(e.event.zrScale));
-                    break;
-                case 'pinching':
-                    this.matrixHelper.onScale(new ScaleGestureDetector(e.event.zrScale));
-                    break;
-                case 'pinchEnd':
-                    this.matrixHelper.onScaleEnd(new ScaleGestureDetector(e.event.zrScale));
-                    break;
-                default:
-                    break;
-            }
-        });
+        // this.zrender = zrender.init(this.containerRef, {
+        //     renderer: 'skia',
+        // });
+        // const { width, height } = this.getWidthAndHeight();
+        // this.zrender.resize({
+        //     width,
+        //     height,
+        // });
+        // this.canvas = new CanvasImpl(this.zrender);
+        // this.zrender.on('mousedown', (e) => {
+        //     this.matrixHelper.handlerTouchEvent(new MotionEvent(MotionEvent.ACTION_DOWN, e.offsetX, e.offsetY, 1, 1));
+        // });
+        // this.zrender.on('mousemove', (e) => {
+        //     this.matrixHelper.handlerTouchEvent(new MotionEvent(MotionEvent.ACTION_MOVE, e.offsetX, e.offsetY, 1, 1));
+        // });
+        // this.zrender.on('mouseup', (e) => {
+        //     this.matrixHelper.handlerTouchEvent(new MotionEvent(MotionEvent.ACTION_UP, e.offsetX, e.offsetY, 1, 1));
+        // });
+        // this.zrender.on('mousewheel', (e) => {
+        //     switch (e.event.zrStatus) {
+        //         case 'pinchBegin':
+        //             this.matrixHelper.onScaleBegin(new ScaleGestureDetector(e.event.zrScale));
+        //             break;
+        //         case 'pinching':
+        //             this.matrixHelper.onScale(new ScaleGestureDetector(e.event.zrScale));
+        //             break;
+        //         case 'pinchEnd':
+        //             this.matrixHelper.onScaleEnd(new ScaleGestureDetector(e.event.zrScale));
+        //             break;
+        //         default:
+        //             break;
+        //     }
+        // });
+        // this.forceUpdate();
+        this.initTableData();
+        this.notifyDataChanged();
         this.forceUpdate();
     }
 
     componentWillUnmount() {
-        this.zrender.dispose(); // 组件卸载时销毁 ZRender 实例
+        // this.zrender.dispose(); // 组件卸载时销毁 ZRender 实例
     }
 
     componentDidUpdate() {
@@ -127,15 +133,74 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
     }
 
     public render() {
+        // return (
+        //     <View style={this.props.style}>
+        //         <SkiaChart
+        //             useRNGH
+        //             ref={(ref) => (this.containerRef = ref)}
+        //             style={{ backgroundColor: 'white' }}
+        //         />
+        //     </View>
+        // );
+        const { style } = this.props;
+
+
         return (
-            <View style={this.props.style}>
-                <SkiaChart
-                    useRNGH
-                    ref={(ref) => (this.containerRef = ref)}
-                    style={{ backgroundColor: 'white' }}
-                />
-            </View>
+            <TMPJSTable tableData={this.tableData} frozenColumns={this.props.frozenColumns} frozenRows={this.props.frozenRows} style={this.props.style} />
         );
+
+        const tableData = [];
+        const width = 10;
+        const height = 30;
+        for (let i = 0; i < height; i += 1) {
+            const rowData = [];
+            for (let j = 0; j < width; j += 1) {
+                rowData.push(`${i}${j}`);
+            }
+            tableData.push(rowData);
+        }
+        const tmp = [40, 60, 80, 100, 120, 140, 160, 180, 200];
+        const widthArr:Array<number> = [];
+        const headArr: Array<string> = [];
+        for(let i = 0; i < width; i++) {
+            widthArr.push(tmp[i % tmp.length]);
+            headArr.push(`Head${i}`);
+        }
+
+        return (<View style={[style, styles.container]}>
+            <ScrollView horizontal={true}>
+                <View>
+                    <Table borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }}>
+                        <Row data={headArr} widthArr={widthArr} style={styles.head} textStyle={styles.text} />
+                    </Table>
+                    <ScrollView style={{ marginTop: -1 }}>
+                        <Table style={{ flexDirection: 'row' }} borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }}>
+                            <TableWrapper style={{ flexDirection: 'column', width: 80, }}>
+                                <TableWrapper style={{ flexDirection: 'row', width: 80, height: 120 }}>
+                                    <Col data={['H1', 'H2']} style={[styles.head, { width: 40 }]} heightArr={[60, 60]} textStyle={styles.text} />
+                                    <Col data={['ad', 'dfs', 'rew', 'hgf']} style={[styles.head, { width: 40 }]} heightArr={[30, 30, 30, 30]} textStyle={styles.text}></Col>
+
+                                </TableWrapper>
+                                <Cell data="dfsder" style={styles.singleHead}/>
+                            </TableWrapper>
+                            <TableWrapper style={{ flex: 1 }}>
+                                {
+                                    tableData.map((rowData, index) => (
+                                        <Row
+                                            key={index}
+                                            data={rowData}
+                                            widthArr={widthArr}
+                                            style={[{ height: 40, backgroundColor: '#E7E6E1' }, index % 2 ? { backgroundColor: '#F7F6E7' } : {}]}
+                                            textStyle={styles.text}
+                                        />
+                                    ))
+                                }
+                            </TableWrapper>
+                        </Table>
+                    </ScrollView>
+                </View>
+            </ScrollView>
+        </View>);
     }
 
     private getWidthAndHeight() {
@@ -146,10 +211,10 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
     protected initTableData() {
         const { tableData } = this.props;
         const { width, height } = this.getWidthAndHeight();
-        this.zrender.resize({
-            width,
-            height,
-        });
+        // this.zrender.resize({
+        //     width,
+        //     height,
+        // });
         this.setTableData(tableData);
         this.showRect = new Rect(0, 0, width, height);
     }
@@ -342,3 +407,11 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
         return this.yAxis;
     }
 }
+
+const styles = StyleSheet.create({
+    container: { backgroundColor: '#fff' },
+    head: { height: 40, backgroundColor: '#f1f8ff' },
+    singleHead: { width: 80, height: 40, backgroundColor: '#c8e1ff' },
+    text: { margin: 6 }
+  });
+  
