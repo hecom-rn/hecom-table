@@ -5,8 +5,9 @@ import type { Cell } from "../table/bean/Cell";
 import type { Column } from "../form/data/column/Column";
 import { Text } from "react-native-svg";
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, type GestureEvent, type PanGestureHandlerEventPayload } from "react-native-gesture-handler";
-import Animated, { useAnimatedGestureHandler, useAnimatedStyle, useSharedValue, withDecay } from "react-native-reanimated";
+import Animated, { runOnJS, useAnimatedGestureHandler, useAnimatedStyle, useSharedValue, withDecay } from "react-native-reanimated";
 import { useState } from "react";
+import { max } from "zrender/lib/core/vector";
 
 interface Props {
     style?: any;
@@ -186,10 +187,37 @@ function genTopTable(mergedRowCells: MergedCell[], rowNum: number): React.ReactE
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
+function getContentSize(props: Props) {
+    const { tableData } = props;
+    if (!tableData) return { width: 0, height: 0 };
+    let width = 0;
+    let height = 0;
+    tableData.getChildColumns().forEach((column) => {
+        width += column.getComputeWidth();
+    });
+    tableData.getChildColumns()[0].getDatas().forEach((data) => {
+        height += data.getCache()?.getHeight() || 0;
+    });
+    return { width, height };
+}
+
+function getInnerNumber(min: number, n: number, max: number):number {
+    if (n < min) {
+        return min;
+    } else if (n > max) {
+        return max;
+    } else {
+        return n;
+    }
+}
+
 export default function Table(props: Props) {
     const { style, tableData, frozenRows = 0, frozenColumns = 0 } = props;
     if (!tableData) return <View />;
-    const height = tableData.getChildColumns()?.[0].getDatas().length;
+    const rowNums = tableData.getChildColumns()?.[0].getDatas().length;
+    const { width, height } = getContentSize(props);
+    const maxScrollX = width - style.width || 0;
+    const maxScrollY = height - style.height || 0;
 
     const mergedCornerCells = mergeCells(tableData?.getChildColumns(), frozenRows, frozenColumns);
     const mergedRowCells = mergeCells(tableData?.getChildColumns(), frozenRows)?.filter((item) => item.col >= frozenColumns);
@@ -198,12 +226,14 @@ export default function Table(props: Props) {
 
     const tmpCorner = genTopTable(mergedCornerCells, frozenRows);
     const tmpTop = genTopTable(mergedRowCells, frozenRows);
-    const tmpLeft = genTopTable(mergedColumnCells, height - frozenRows);
-    const tmpContent = genTopTable(mergedContentCells, height - frozenRows);
+    const tmpLeft = genTopTable(mergedColumnCells, rowNums - frozenRows);
+    const tmpContent = genTopTable(mergedContentCells, rowNums - frozenRows);
 
    
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
+    const preTranslateX = useSharedValue(0);
+    const preTranslateY = useSharedValue(0);
 
     const animatedStyleX = useAnimatedStyle(() => ({
         transform: [{ translateX: translateX.value }],
@@ -211,30 +241,44 @@ export default function Table(props: Props) {
     const animatedStyleY = useAnimatedStyle(() => ({
         transform: [ { translateY: translateY.value }],
     }));
-
-    // function onGestureEvent(event: GestureEvent<PanGestureHandlerEventPayload>): void {
-    //     console.log('event', event.nativeEvent);
-    //     // Update the shared value based on the gesture event translatio
-    //     translateX.value = event.nativeEvent.translationX;
-    //     translateY.value = event.nativeEvent.translationY;
-    // }
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [ { translateX: translateX.value}, {translateY: translateY.value }],
+    }));
 
     const gestureHandler = Gesture.Pan().onBegin((event) => {
-        console.log('onBegin', event);
+        preTranslateX.value = translateX.value;
+        preTranslateY.value = translateY.value;
     }).onUpdate((event) => {
-        console.log('onUpdate', event);
-        translateX.value = event.translationX;
-        translateY.value = event.translationY;
+        'worklet';
+        if (maxScrollX > 0) {
+            translateX.value = preTranslateX.value + event.translationX;
+            if (translateX.value > 0) {
+                translateX.value = 0;
+            } else if (translateX.value < -maxScrollX) {
+                translateX.value = -maxScrollX;
+            }
+        }
+        if (maxScrollY > 0){
+            translateY.value = preTranslateY.value + event.translationY;
+            if (translateY.value > 0) {
+                translateY.value = 0;
+            } else if (translateY.value < -maxScrollY) {
+                translateY.value = -maxScrollY;
+            }
+        }   
     }).onEnd((event) => {
-        console.log('onEnd', event);
-        // translateX.value = withDecay({
-        //     velocity: event.velocityX,
-        //     // clamp: [-(screenWidth - screenWidth), 0], // 限制水平滑动范围
-        // });
-        // translateY.value = withDecay({
-        //     velocity: event.velocityY,
-        //     // clamp: [-(screenHeight - screenHeight), 0], // 限制垂直滑动范围
-        // });
+        if (maxScrollX > 0) {
+            translateX.value = withDecay({
+                velocity: event.velocityX,
+                clamp: [-maxScrollX, 0], // 限制水平滑动范围
+            });
+        }
+        if (maxScrollY > 0) {
+            translateY.value = withDecay({
+                velocity: event.velocityY,
+                clamp: [-maxScrollY, 0], // 限制垂直滑动范围
+            });
+        }
     });
 
     return (
@@ -249,7 +293,7 @@ export default function Table(props: Props) {
                         </ReAnimatedTable>
 
                         <View style={{overflow: 'hidden'}}>
-                            <Animated.View style={[ animatedStyleX]}>
+                            <Animated.View style={[animatedStyleX]}>
                         <ReAnimatedTable borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }} >
                             {tmpTop}
                         </ReAnimatedTable>
@@ -259,14 +303,14 @@ export default function Table(props: Props) {
                     {/* <ScrollView> */}
                         <View style={{ flexDirection: 'row' }}>
                             <View style={{overflow: 'hidden'}}>
-                            <Animated.View style={[ animatedStyleY]}>
+                            <Animated.View style={[animatedStyleY]}>
                             <ReAnimatedTable borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }} >
                                 {tmpLeft}
                             </ReAnimatedTable>
                             </Animated.View>
                             </View>
                             <View style={{overflow: 'hidden'}}>
-                            <Animated.View style={[ animatedStyleX, animatedStyleY]}>
+                            <Animated.View style={animatedStyle}>
                                 <ReAnimatedTable borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }} >
                                     {tmpContent}
                                 </ReAnimatedTable>
