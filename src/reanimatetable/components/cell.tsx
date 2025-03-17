@@ -6,7 +6,11 @@ import {
   ViewStyle,
   TextStyle,
   StyleProp,
+  TouchableOpacity,
+  Image,
 } from 'react-native';
+import { Icon } from "../../table/bean/Cell";
+import { CanvasImpl } from '../../form/utils/Canvas';
 
 interface CellProps {
   data: React.ReactNode;
@@ -19,6 +23,8 @@ interface CellProps {
     borderColor?: string;
     borderWidth?: number;
   };
+  icon?: Icon;
+  onPress?: () => void;
 }
 
 export const Cell: FC<CellProps> = ({
@@ -29,6 +35,8 @@ export const Cell: FC<CellProps> = ({
   style,
   textStyle,
   borderStyle,
+  icon,
+  onPress,
   ...props
 }) => {
   const textDom = React.isValidElement(data) ? (
@@ -61,7 +69,8 @@ export const Cell: FC<CellProps> = ({
   }, [width, height, flex, style]);
 
   return (
-    <View
+    <TouchableOpacity 
+      onPress={onPress}
       style={StyleSheet.flatten([
         {
           borderTopWidth,
@@ -73,12 +82,59 @@ export const Cell: FC<CellProps> = ({
         style,
       ])}
     >
-      {textDom}
-    </View>
+      {icon ? (
+        getContent(icon, textDom)
+      ) : (
+        textDom
+      )}
+    </TouchableOpacity>
   );
 };
+
+function getContent(icon: Icon, textDom: React.ReactNode) {
+  console.log('icon = ', icon);
+  switch (icon?.imageAlignment) {
+    case Icon.LEFT:
+      return (
+        <View style={styles.row}>
+          {getIcon(icon)}
+          {textDom}
+        </View>
+      );
+    case Icon.RIGHT:
+      return (
+        <View style={styles.row}>
+          {textDom}
+          {getIcon(icon)}
+        </View>
+      );
+    case Icon.TOP:
+      return (
+        <View>
+          {getIcon(icon)}
+          {textDom}
+        </View>
+      );
+    case Icon.BOTTOM:
+      return (
+        <View>
+          {textDom}
+          {getIcon(icon)}
+        </View>
+      );
+    default:
+      return textDom;
+  }
+}
+
+function getIcon(icon: Icon) {
+  return (
+    <Image source={CanvasImpl.IMAGEMAP[icon.name]} style={{width: icon?.width, height: icon?.height, alignSelf: 'center'}} />
+  )
+}
 
 const styles = StyleSheet.create({
   cell: { justifyContent: 'center' },
   text: { backgroundColor: 'transparent' },
+  row: { flexDirection: 'row'},
 });

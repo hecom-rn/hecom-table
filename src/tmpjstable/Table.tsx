@@ -1,7 +1,7 @@
 import { View, ScrollView, StyleSheet, Dimensions } from "react-native";
 import { Row, TableWrapper, Col, Cell as CellComponent, Table as ReAnimatedTable } from "../reanimatetable/index";
 import { TableData } from "../form/data/table/TableData";
-import type { Cell } from "../table/bean/Cell";
+import { Icon, type Cell } from "../table/bean/Cell";
 import type { Column } from "../form/data/column/Column";
 import { Text } from "react-native-svg";
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, type GestureEvent, type PanGestureHandlerEventPayload } from "react-native-gesture-handler";
@@ -14,16 +14,21 @@ interface Props {
     tableData: TableData<Cell>;
     frozenRows?: number;
     frozenColumns?: number;
+    onClickEvent?: (data: any) => void;
 }
 
 type MergedCell = {
     textArr: string[] | undefined;
     width: number;
     height: number;
+    keyIndex: number;
     row: number;
     col: number;
     rowSpan: number;
     colSpan: number;
+    icon?: Icon;
+    textColor?: string;
+    fontSize?: number;
 };
 
 function mergeCells(columnArr: Array<Column<Cell>>, preRows?: number, preColumns?: number): MergedCell[] {
@@ -84,11 +89,15 @@ function mergeCells(columnArr: Array<Column<Cell>>, preRows?: number, preColumns
                 result.push({
                     col: minRow,
                     row: minCol,
+                    keyIndex: targetValue.getKeyIndex(),
                     colSpan: maxRow - minRow + 1,
                     rowSpan: maxCol - minCol + 1,
                     textArr: columnArr[minRow].getDatas()[minCol].getCache()?.getStrArr(),
-                    width,
-                    height
+                    width: width + getExtraWidth() * (maxRow - minRow + 1),
+                    height: height + getExtraHeight() * (maxCol - minCol + 1),
+                    icon: columnArr[minRow].getDatas()[minCol].getIcon(),
+                    textColor: columnArr[minRow].getDatas()[minCol].getTextColor(),
+                    fontSize: columnArr[minRow].getDatas()[minCol].getFontSize()
                 });
             }
         }
@@ -96,12 +105,34 @@ function mergeCells(columnArr: Array<Column<Cell>>, preRows?: number, preColumns
     return result;
 }
 
-function genTopTableItem(subMergedCells: MergedCell[], rowNum: number): React.ReactElement {
+function getExtraWidth() {
+    return 4;
+}
+function getExtraHeight() {
+    return 8;
+}
+
+function genTopTableItem(subMergedCells: MergedCell[], rowNum: number, props: Props): React.ReactElement {
+    const { onClickEvent } = props;
     if (subMergedCells.length === 0) {
         return <TableWrapper />;
     }
     if (subMergedCells.length === 1) {
-        return <CellComponent data={subMergedCells[0].textArr?.join('\n')} style={{ width: subMergedCells[0].width, height: subMergedCells[0].height }} />;
+        return (
+            <CellComponent 
+                data={subMergedCells[0].textArr?.join('\n')} 
+                icon={subMergedCells[0].icon} 
+                style={{ width: subMergedCells[0].width, height: subMergedCells[0].height }} 
+                textStyle={[styles.text, {color:subMergedCells[0].textColor, fontSize: subMergedCells[0].fontSize}]}
+                onPress={() => {
+                    onClickEvent && onClickEvent({
+                        keyIndex: subMergedCells[0].keyIndex,
+                        rowIndex: subMergedCells[0].row,
+                        columnIndex: subMergedCells[0].col,
+                    });
+                }}
+            />
+        );
     }
 
     const maxColumnSpan = subMergedCells.reduce((max, item) => Math.max(max, item.col + item.colSpan), 0);
@@ -109,16 +140,28 @@ function genTopTableItem(subMergedCells: MergedCell[], rowNum: number): React.Re
     if (maxColumnSpan === minColumnSpan) {
         const width = subMergedCells.reduce((max, item) => Math.max(max, item.width), 0);
         const heightArr = subMergedCells.map((item) => item.height);
-        // const data = subMergedCells.map((item) => (
-        //     <View>
-        //         <Text>{item.textArr?.join('\n')}</Text>
-        //     </View>
-        // ));
         const data = subMergedCells.map((item) => (
           item.textArr?.join('\n')  
-        ))
+        ));
+        const icons = subMergedCells.map((item) => (
+            item.icon
+        ));
+        const onPressFuncs = subMergedCells.map((item) => (
+            () => {onClickEvent && onClickEvent({
+                keyIndex: item.keyIndex,
+                rowIndex: item.row,
+                columnIndex: item.col,
+            })}
+        ));
         return (
-            <Col data={data} style={[{ width }]} heightArr={heightArr} />
+            <Col 
+                data={data} 
+                icons={icons} 
+                onPressFuncs={onPressFuncs}
+                style={[{ width }]} 
+                heightArr={heightArr} 
+                textStyle={[styles.text, {color:subMergedCells?.[0].textColor, fontSize: subMergedCells?.[0].fontSize}]}
+            />
         )
     }
     const maxIndex = subMergedCells.reduce(
@@ -128,19 +171,27 @@ function genTopTableItem(subMergedCells: MergedCell[], rowNum: number): React.Re
     );
     return (
         <TableWrapper style={{ flexDirection: 'column' }}>
-            {genTopTable(subMergedCells.slice(0, maxIndex), subMergedCells[maxIndex].row - subMergedCells[0].row)}
+            {genTopTable(subMergedCells.slice(0, maxIndex), subMergedCells[maxIndex].row - subMergedCells[0].row, props)}
             <Row 
                 data={[subMergedCells[maxIndex].textArr?.join('\n')]} 
+                icons={[subMergedCells[maxIndex].icon]}
+                onPressFuncs={[() => {
+                    onClickEvent && onClickEvent({
+                        keyIndex: subMergedCells[maxIndex].keyIndex,
+                        rowIndex: subMergedCells[maxIndex].row,
+                        columnIndex: subMergedCells[maxIndex].col,
+                    });
+                }]}
                 widthArr={[subMergedCells[maxIndex].width]}
                 style={[{ height: subMergedCells[maxIndex].height, }]}
-                textStyle={styles.text}
+                textStyle={[styles.text, {color:subMergedCells?.[0].textColor, fontSize: subMergedCells?.[0].fontSize}]}
             />
-            {genTopTable(subMergedCells.slice(maxIndex + 1), rowNum - (subMergedCells[maxIndex].row - subMergedCells[0].row + subMergedCells[maxIndex].rowSpan))}
+            {genTopTable(subMergedCells.slice(maxIndex + 1), rowNum - (subMergedCells[maxIndex].row - subMergedCells[0].row + subMergedCells[maxIndex].rowSpan), props)}
         </TableWrapper>
     );
 }
 
-function genTopTable(mergedRowCells: MergedCell[], rowNum: number): React.ReactElement {
+function genTopTable(mergedRowCells: MergedCell[], rowNum: number, props: Props): React.ReactElement {
     if (rowNum === 0) {
         return <TableWrapper />;
     }
@@ -179,13 +230,11 @@ function genTopTable(mergedRowCells: MergedCell[], rowNum: number): React.ReactE
     return (
         <TableWrapper style={{ flexDirection: 'row' }}>
             {mergedCellsArr.map((subMergedCells) => (
-                genTopTableItem(subMergedCells, rowNum)
+                genTopTableItem(subMergedCells, rowNum, props)
             ))}
         </TableWrapper>
     );
 }
-
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 function getContentSize(props: Props) {
     const { tableData } = props;
@@ -193,22 +242,12 @@ function getContentSize(props: Props) {
     let width = 0;
     let height = 0;
     tableData.getChildColumns().forEach((column) => {
-        width += column.getComputeWidth();
+        width += column.getComputeWidth() + getExtraWidth();
     });
     tableData.getChildColumns()[0].getDatas().forEach((data) => {
-        height += data.getCache()?.getHeight() || 0;
+        height += (data.getCache()?.getHeight() || 0) + getExtraHeight();
     });
     return { width, height };
-}
-
-function getInnerNumber(min: number, n: number, max: number):number {
-    if (n < min) {
-        return min;
-    } else if (n > max) {
-        return max;
-    } else {
-        return n;
-    }
 }
 
 export default function Table(props: Props) {
@@ -216,18 +255,18 @@ export default function Table(props: Props) {
     if (!tableData) return <View />;
     const rowNums = tableData.getChildColumns()?.[0].getDatas().length;
     const { width, height } = getContentSize(props);
-    const maxScrollX = width - style.width || 0;
-    const maxScrollY = height - style.height || 0;
+    const maxScrollX = width - (style.width || 0);
+    const maxScrollY = height - (style.height || 0);
 
     const mergedCornerCells = mergeCells(tableData?.getChildColumns(), frozenRows, frozenColumns);
     const mergedRowCells = mergeCells(tableData?.getChildColumns(), frozenRows)?.filter((item) => item.col >= frozenColumns);
     const mergedColumnCells = mergeCells(tableData?.getChildColumns(), undefined, frozenColumns)?.filter((item) => item.row >= frozenRows);
     const mergedContentCells = mergeCells(tableData?.getChildColumns())?.filter((item) => item.row >= frozenRows && item.col >= frozenColumns);
 
-    const tmpCorner = genTopTable(mergedCornerCells, frozenRows);
-    const tmpTop = genTopTable(mergedRowCells, frozenRows);
-    const tmpLeft = genTopTable(mergedColumnCells, rowNums - frozenRows);
-    const tmpContent = genTopTable(mergedContentCells, rowNums - frozenRows);
+    const tmpCorner = genTopTable(mergedCornerCells, frozenRows, props);
+    const tmpTop = genTopTable(mergedRowCells, frozenRows, props);
+    const tmpLeft = genTopTable(mergedColumnCells, rowNums - frozenRows, props);
+    const tmpContent = genTopTable(mergedContentCells, rowNums - frozenRows, props);
 
    
     const translateX = useSharedValue(0);
@@ -282,84 +321,49 @@ export default function Table(props: Props) {
     });
 
     return (
-        <GestureHandlerRootView style={styles.container}>
+        <GestureHandlerRootView>
             <GestureDetector gesture={gestureHandler}>
-        <View style={[style, styles.container]}>
-            {/* <ScrollView horizontal={true}> */}
-                <View>
-                    <View style={{ flexDirection: 'row' }}>
-                        <ReAnimatedTable borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }} >
+                <View style={[style, styles.container, styles.hideOverFlow]}>
+                    <View style={styles.row}>
+                        <ReAnimatedTable borderStyle={styles.borderStyle} >
                             {tmpCorner}
                         </ReAnimatedTable>
-
-                        <View style={{overflow: 'hidden'}}>
+                        <View style={styles.hideOverFlow}>
                             <Animated.View style={[animatedStyleX]}>
-                        <ReAnimatedTable borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }} >
-                            {tmpTop}
-                        </ReAnimatedTable>
+                                <ReAnimatedTable borderStyle={styles.borderStyle} >
+                                    {tmpTop}
+                                </ReAnimatedTable>
                             </Animated.View>
-                            </View>
+                        </View>
                     </View>
-                    {/* <ScrollView> */}
-                        <View style={{ flexDirection: 'row' }}>
-                            <View style={{overflow: 'hidden'}}>
+                    <View style={styles.row}>
+                        <View style={styles.hideOverFlow}>
                             <Animated.View style={[animatedStyleY]}>
-                            <ReAnimatedTable borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }} >
-                                {tmpLeft}
-                            </ReAnimatedTable>
+                                <ReAnimatedTable borderStyle={styles.borderStyle} >
+                                    {tmpLeft}
+                                </ReAnimatedTable>
                             </Animated.View>
-                            </View>
-                            <View style={{overflow: 'hidden'}}>
+                        </View>
+                        <View style={styles.hideOverFlow}>
                             <Animated.View style={animatedStyle}>
-                                <ReAnimatedTable borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }} >
+                                <ReAnimatedTable borderStyle={styles.borderStyle} >
                                     {tmpContent}
                                 </ReAnimatedTable>
                             </Animated.View>
-                            </View>
-
                         </View>
-                    {/* </ScrollView> */}
+                    </View>               
                 </View>
-            {/* </ScrollView> */}
-        </View>
-             </GestureDetector>
-         </GestureHandlerRootView>
-    )
-    // return (
-    //     <View style={[style, styles.container]}>
-    //         <ScrollView horizontal={true}>
-    //             <View>
-    //                 <Table borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }}>
-    //                     <Row data={headArr} widthArr={widthArr} style={styles.head} textStyle={styles.text} />
-    //                 </Table>
-    //                 <ScrollView style={{ marginTop: -1 }}>
-    //                     <Table style={{ flexDirection: 'row' }} borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }}>
-    //                         <TableWrapper style={{ flexDirection: 'row', width: 80 }}>
-    //                             <Col data={['H1', 'H2']} style={[styles.head, { width: 40 }]} heightArr={[60, 60]} textStyle={styles.text} />
-    //                             <Col data={['ad', 'dfs', 'rew', 'hgf']} style={[styles.head, { width: 40 }]} heightArr={[30, 30, 30, 30]} textStyle={styles.text}></Col>
-    //                         </TableWrapper>
-    //                         <TableWrapper style={{ flex: 1 }}>
-    //                             {
-    //                                 tableData.map((rowData, index) => (
-    //                                     <Row
-    //                                         key={index}
-    //                                         data={rowData}
-    //                                         widthArr={widthArr}
-    //                                         style={[{ height: 40, backgroundColor: '#E7E6E1' }, index % 2 ? { backgroundColor: '#F7F6E7' } : {}]}
-    //                                         textStyle={styles.text}
-    //                                     />
-    //                                 ))
-    //                             }
-    //                         </TableWrapper>
-    //                     </Table>
-    //                 </ScrollView>
-    //             </View>
-    //         </ScrollView>
-    //     </View>
-    // )
+            </GestureDetector>
+        </GestureHandlerRootView>
+    );
 }
 
 const styles = StyleSheet.create({
+    hideOverFlow: {
+        overflow: 'hidden',
+    },
+    row: { flexDirection: 'row' },
+    borderStyle: { borderWidth: 1, borderColor: '#C1C0B9' },
     container: { backgroundColor: '#fff' },
     head: { height: 40, backgroundColor: '#f1f8ff' },
     text: { margin: 6 }

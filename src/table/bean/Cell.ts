@@ -44,7 +44,7 @@ export class Cell {
     private fontSize: number = 0;
     private textColor: string = TableConfig.INVALID_COLOR;
     private textAlignment: TextAlign = TextAlign.LEFT;
-    private icon: Icon | null = null;
+    private icon: Icon | undefined = undefined;
     private progressStyle: ProgressStyle | null = null;
     private _isOverstriking: boolean = false;
     private _isForbidden: boolean = false; // 斜线
@@ -223,11 +223,11 @@ export class Cell {
         this.textColor = textColor;
     }
 
-    getIcon(): Icon | null {
+    getIcon(): Icon | undefined {
         return this.icon;
     }
 
-    setIcon(icon: Icon | null): void {
+    setIcon(icon: Icon | undefined): void {
         this.icon = icon;
     }
 

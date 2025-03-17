@@ -2,9 +2,12 @@ import React, { FC, useMemo } from 'react';
 import { View, StyleSheet, ViewStyle, TextStyle, StyleProp } from 'react-native';
 import { Cell } from './cell';
 import { sum } from '../utils';
+import type { Icon } from '../../table/bean/Cell';
 
 interface RowProps {
   data: any[];
+  icons?: (Icon | undefined)[];
+  onPressFuncs?: (() => void | undefined)[];
   style?: StyleProp<ViewStyle>;
   widthArr?: number[];
   height?: number;
@@ -21,6 +24,8 @@ export const Row: FC<RowProps> = ({
   flexArr,
   textStyle,
   cellTextStyle,
+  icons,
+  onPressFuncs,
   ...props
 }) => {
   const width = widthArr ? sum(widthArr) : 0;
@@ -45,6 +50,8 @@ export const Row: FC<RowProps> = ({
           <Cell
             key={i}
             data={item}
+            icon={icons?.[i]}
+            onPress={onPressFuncs?.[i]}
             width={wth}
             height={height}
             flex={flex}
@@ -62,6 +69,8 @@ export const Row: FC<RowProps> = ({
 
 interface RowsProps {
   data: any[][];
+  icons?: (Icon | undefined)[][];
+  onPressFuncs?: (() => void | undefined)[][];
   style?: StyleProp<ViewStyle>;
   widthArr?: number[];
   heightArr?: number[];
@@ -76,6 +85,8 @@ export const Rows: FC<RowsProps> = ({
   heightArr,
   flexArr,
   textStyle,
+  icons,
+  onPressFuncs,
   ...props
 }) => {
   const flex = flexArr ? sum(flexArr) : 0;
@@ -100,6 +111,8 @@ export const Rows: FC<RowsProps> = ({
           <Row
             key={i}
             data={item}
+            icons={icons?.[i]}
+            onPressFuncs={onPressFuncs?.[i]}
             widthArr={widthArr}
             height={height}
             flexArr={flexArr}

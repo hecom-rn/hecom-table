@@ -2,9 +2,12 @@ import React, { FC } from 'react';
 import { View, StyleSheet, ViewStyle, TextStyle, StyleProp } from 'react-native';
 import { Cell } from './cell';
 import { sum } from '../utils';
+import type { Icon } from '../../table/bean/Cell';
 
 interface ColProps {
   data: any[];
+  icons?: (Icon | undefined)[];
+  onPressFuncs?: (() => void | undefined)[];
   style?: StyleProp<ViewStyle>;
   width?: number;
   heightArr?: number[];
@@ -12,13 +15,15 @@ interface ColProps {
   textStyle?: StyleProp<TextStyle>;
 }
 
-export const Col: FC<ColProps> = ({ data, style, width, heightArr, flex, textStyle, ...props }) => {
+export const Col: FC<ColProps> = ({ data, style, width, heightArr, flex, textStyle,
+  icons, onPressFuncs, ...props }) => {
   return data ? (
     <View style={StyleSheet.flatten([{ width: width ?? (flex ? undefined : 1), flex }, style])}>
       {data.map((item, i) => {
         const height = heightArr?.[i];
         return (
-          <Cell key={i} data={item} width={width} height={height} textStyle={textStyle} {...props} />
+          <Cell key={i} data={item}
+          icon={icons?.[i]} onPress={onPressFuncs?.[i]} width={width} height={height} textStyle={textStyle} {...props} />
         );
       })}
     </View>
@@ -27,6 +32,8 @@ export const Col: FC<ColProps> = ({ data, style, width, heightArr, flex, textSty
 
 interface ColsProps {
   data: any[][];
+  icons?: (Icon | undefined)[][];
+  onPressFuncs?: (() => void | undefined)[][];
   style?: StyleProp<ViewStyle>;
   widthArr?: number[];
   heightArr?: number[];
@@ -34,7 +41,8 @@ interface ColsProps {
   textStyle?: StyleProp<TextStyle>;
 }
 
-export const Cols: FC<ColsProps> = ({ data, style, widthArr, heightArr, flexArr, textStyle, ...props }) => {
+export const Cols: FC<ColsProps> = ({ data, style, widthArr, heightArr, flexArr, textStyle,
+  icons, onPressFuncs, ...props }) => {
   const width = widthArr ? sum(widthArr) : 0;
 
   return data ? (
@@ -46,6 +54,8 @@ export const Cols: FC<ColsProps> = ({ data, style, widthArr, heightArr, flexArr,
           <Col
             key={i}
             data={item}
+            icons={icons?.[i]}
+            onPressFuncs={onPressFuncs?.[i]}
             width={wth}
             heightArr={heightArr}
             flex={flex}
