@@ -92,7 +92,6 @@ export const Cell: FC<CellProps> = ({
 };
 
 function getContent(icon: Icon, textDom: React.ReactNode) {
-  console.log('icon = ', icon);
   switch (icon?.imageAlignment) {
     case Icon.LEFT:
       return (

@@ -6,7 +6,7 @@ import type { Column } from "../form/data/column/Column";
 import { Text } from "react-native-svg";
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, type GestureEvent, type PanGestureHandlerEventPayload } from "react-native-gesture-handler";
 import Animated, { runOnJS, useAnimatedGestureHandler, useAnimatedStyle, useSharedValue, withDecay } from "react-native-reanimated";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { max } from "zrender/lib/core/vector";
 
 interface Props {
@@ -15,6 +15,7 @@ interface Props {
     frozenRows?: number;
     frozenColumns?: number;
     onClickEvent?: (data: any) => void;
+    onMounted?: () => void;
 }
 
 type MergedCell = {
@@ -31,8 +32,11 @@ type MergedCell = {
     fontSize?: number;
 };
 
-function mergeCells(columnArr: Array<Column<Cell>>, preRows?: number, preColumns?: number): MergedCell[] {
+function mergeCells(props: Props, preRows?: number, preColumns?: number): MergedCell[] {
+    const { tableData } = props;
     const result: MergedCell[] = [];
+    const columnArr = tableData?.getChildColumns();
+    const tableInfo = tableData?.getTableInfo();
     if (!columnArr.length || !columnArr[0].getDatas().length) return result;
 
     const rows = preColumns || columnArr.length;
@@ -83,7 +87,8 @@ function mergeCells(columnArr: Array<Column<Cell>>, preRows?: number, preColumns
                 }
                 let height = 0;
                 for (let i = minCol; i <= maxCol; i++) {
-                    height += columnArr[minRow].getDatas()[i].getCache()?.getHeight() || 0;
+                    // height += columnArr[minRow].getDatas()[i].getCache()?.getHeight() || 0;
+                    height += tableInfo?.getLineHeightArray()?.[i] || 0;
                 }
                 // 生成合并信息
                 result.push({
@@ -109,7 +114,7 @@ function getExtraWidth() {
     return 4;
 }
 function getExtraHeight() {
-    return 8;
+    return 12;
 }
 
 function genTopTableItem(subMergedCells: MergedCell[], rowNum: number, props: Props): React.ReactElement {
@@ -251,17 +256,17 @@ function getContentSize(props: Props) {
 }
 
 export default function Table(props: Props) {
-    const { style, tableData, frozenRows = 0, frozenColumns = 0 } = props;
+    const { style, tableData, frozenRows = 0, frozenColumns = 0, onMounted } = props;
     if (!tableData) return <View />;
     const rowNums = tableData.getChildColumns()?.[0].getDatas().length;
     const { width, height } = getContentSize(props);
     const maxScrollX = width - (style.width || 0);
     const maxScrollY = height - (style.height || 0);
 
-    const mergedCornerCells = mergeCells(tableData?.getChildColumns(), frozenRows, frozenColumns);
-    const mergedRowCells = mergeCells(tableData?.getChildColumns(), frozenRows)?.filter((item) => item.col >= frozenColumns);
-    const mergedColumnCells = mergeCells(tableData?.getChildColumns(), undefined, frozenColumns)?.filter((item) => item.row >= frozenRows);
-    const mergedContentCells = mergeCells(tableData?.getChildColumns())?.filter((item) => item.row >= frozenRows && item.col >= frozenColumns);
+    const mergedCornerCells = mergeCells(props, frozenRows, frozenColumns);
+    const mergedRowCells = mergeCells(props, frozenRows)?.filter((item) => item.col >= frozenColumns);
+    const mergedColumnCells = mergeCells(props, undefined, frozenColumns)?.filter((item) => item.row >= frozenRows);
+    const mergedContentCells = mergeCells(props)?.filter((item) => item.row >= frozenRows && item.col >= frozenColumns);
 
     const tmpCorner = genTopTable(mergedCornerCells, frozenRows, props);
     const tmpTop = genTopTable(mergedRowCells, frozenRows, props);
@@ -319,6 +324,16 @@ export default function Table(props: Props) {
             });
         }
     });
+
+    useEffect(() => {
+        // 此处执行组件挂载后的初始化操作（等效 componentDidMount）
+        console.log('组件已挂载 time = ', new Date().getTime());
+        onMounted && onMounted();
+        return () => {
+          // 此处编写清理逻辑（等效 componentWillUnmount）
+          console.log('组件即将卸载');
+        };
+      }, []);
 
     return (
         <GestureHandlerRootView>

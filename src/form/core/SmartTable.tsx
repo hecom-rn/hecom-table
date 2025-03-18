@@ -142,65 +142,72 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
         //         />
         //     </View>
         // );
-        const { style, onClickEvent } = this.props;
-
+        const { style, onClickEvent, onMounted } = this.props;
 
         return (
-            <TMPJSTable tableData={this.tableData} onClickEvent={onClickEvent} frozenColumns={this.props.frozenColumns} frozenRows={this.props.frozenRows} style={this.props.style} />
+            <TMPJSTable 
+                tableData={this.tableData} 
+                onClickEvent={onClickEvent} 
+                frozenColumns={this.props.frozenColumns} 
+                frozenRows={this.props.frozenRows} 
+                style={this.props.style} 
+                onMounted={onMounted}
+            />
         );
 
-        const tableData = [];
-        const width = 10;
-        const height = 30;
-        for (let i = 0; i < height; i += 1) {
-            const rowData = [];
-            for (let j = 0; j < width; j += 1) {
-                rowData.push(`${i}${j}`);
-            }
-            tableData.push(rowData);
-        }
-        const tmp = [40, 60, 80, 100, 120, 140, 160, 180, 200];
-        const widthArr:Array<number> = [];
-        const headArr: Array<string> = [];
-        for(let i = 0; i < width; i++) {
-            widthArr.push(tmp[i % tmp.length]);
-            headArr.push(`Head${i}`);
-        }
+        // const tableData = [];
+        // const width = 10;
+        // const height = 30;
+        // for (let i = 0; i < height; i += 1) {
+        //     const rowData = [];
+        //     for (let j = 0; j < width; j += 1) {
+        //         rowData.push(`${i}${j}`);
+        //     }
+        //     tableData.push(rowData);
+        // }
+        // const tmp = [40, 60, 80, 100, 120, 140, 160, 180, 200];
+        // const widthArr:Array<number> = [];
+        // const headArr: Array<string> = [];
+        // for(let i = 0; i < width; i++) {
+        //     widthArr.push(tmp[i % tmp.length]);
+        //     headArr.push(`Head${i}`);
+        // }
 
-        return (<View style={[style, styles.container]}>
-            <ScrollView horizontal={true}>
-                <View>
-                    <Table borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }}>
-                        <Row data={headArr} widthArr={widthArr} style={styles.head} textStyle={styles.text} />
-                    </Table>
-                    <ScrollView style={{ marginTop: -1 }}>
-                        <Table style={{ flexDirection: 'row' }} borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }}>
-                            <TableWrapper style={{ flexDirection: 'column', width: 80, }}>
-                                <TableWrapper style={{ flexDirection: 'row', width: 80, height: 120 }}>
-                                    <Col data={['H1', 'H2']} style={[styles.head, { width: 40 }]} heightArr={[60, 60]} textStyle={styles.text} />
-                                    <Col data={['ad', 'dfs', 'rew', 'hgf']} style={[styles.head, { width: 40 }]} heightArr={[30, 30, 30, 30]} textStyle={styles.text}></Col>
+        // return (<View style={[style, styles.container]}>
+        //     <ScrollView horizontal={true}>
+        //         <View>
+        //             <Table borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }}>
+        //                 <Row data={headArr} widthArr={widthArr} style={styles.head} textStyle={styles.text} />
+        //             </Table>
+        //             <ScrollView style={{ marginTop: -1 }}>
+        //                 <Table style={{ flexDirection: 'row' }} borderStyle={{ borderWidth: 1, borderColor: '#C1C0B9' }}>
+        //                     <TableWrapper style={{ flexDirection: 'column', width: 80, }}>
+        //                         <TableWrapper style={{ flexDirection: 'row', width: 80, height: 120 }}>
+        //                             <Col data={['H1', 'H2']} style={[styles.head, { width: 40 }]} heightArr={[60, 60]} textStyle={styles.text} />
+        //                             <Col data={['ad', 'dfs', 'rew', 'hgf']} style={[styles.head, { width: 40 }]} heightArr={[30, 30, 30, 30]} textStyle={styles.text}></Col>
 
-                                </TableWrapper>
-                                <Cell data="dfsder" style={styles.singleHead}/>
-                            </TableWrapper>
-                            <TableWrapper style={{ flex: 1 }}>
-                                {
-                                    tableData.map((rowData, index) => (
-                                        <Row
-                                            key={index}
-                                            data={rowData}
-                                            widthArr={widthArr}
-                                            style={[{ height: 40, backgroundColor: '#E7E6E1' }, index % 2 ? { backgroundColor: '#F7F6E7' } : {}]}
-                                            textStyle={styles.text}
-                                        />
-                                    ))
-                                }
-                            </TableWrapper>
-                        </Table>
-                    </ScrollView>
-                </View>
-            </ScrollView>
-        </View>);
+        //                         </TableWrapper>
+        //                         <Cell data="dfsder" style={styles.singleHead}/>
+        //                     </TableWrapper>
+        //                     <TableWrapper style={{ flex: 1 }}>
+        //                         {
+        //                             tableData.map((rowData, index) => (
+        //                                 <Row
+        //                                     key={index}
+        //                                     data={rowData}
+        //                                     widthArr={widthArr}
+        //                                     stylconst { x, y, width, height } = event.nativeEvent.layout;
+        //                 this.showRect.set(x, y, we={[{ height: 40, backgroundColor: '#E7E6E1' }, index % 2 ? { backgroundColor: '#F7F6E7' } : {}]}
+        //                                     textStyle={styles.text}
+        //                                 />
+        //                             ))
+        //                         }
+        //                     </TableWrapper>
+        //                 </Table>
+        //             </ScrollView>
+        //         </View>
+        //     </ScrollView>
+        // </View>);
     }
 
     private getWidthAndHeight() {

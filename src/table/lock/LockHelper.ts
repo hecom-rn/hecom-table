@@ -61,11 +61,11 @@ export class LockHelper extends Locker {
 
     public reLock(newData: HecomTableData): void {
         const oldData = this.table.getTableData() as HecomTableData;
-        const arrayColumnSize = newData.columns.length;
+        const arrayColumnSize = newData?.columns.length;
 
         // 应用新的固定列
         for (let i = 0; i < this.frozenColumns && i < arrayColumnSize; i++) {
-            newData.columns[i]?.setFixed(true);
+            newData?.columns[i]?.setFixed(true);
         }
 
         // 迁移旧的锁定状态
@@ -73,7 +73,7 @@ export class LockHelper extends Locker {
             for (let i = 0; i < arrayColumnSize; i++) {
                 const oldColumn = oldData.arrayColumns[i];
                 if (oldColumn?.fixed) {
-                    newData.arrayColumns[i]?.setFixed(true);
+                    newData?.arrayColumns[i]?.setFixed(true);
                 }
             }
         }

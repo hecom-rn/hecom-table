@@ -41,7 +41,6 @@ export class Paint {
             return WidthMap.get(text) || text.length;
         } else {
             const { width } = platformApi.measureText(text, `${this.getTextSize()}px sans-serif`);
-            console.log('text = ', text, ', width = ', width);
             WidthMap.set(text, width);
             return width;
         }

@@ -40,7 +40,7 @@ export class HecomTable extends SmartTable<Cell> {
         this.initTableData();
         const { frozenRows, frozenColumns, tableData, frozenPoint, frozenCount } = this.props;
         this.mClickHandler = new ClickHandler(this);
-        this.tableData.setOnItemClickListener(this.mClickHandler);
+        this.tableData?.setOnItemClickListener(this.mClickHandler);
         this.getConfig().setFixedLines(frozenRows);
         this.mLockHelper.setFrozenColumns(frozenColumns);
         this.mLockHelper.setPoint(frozenPoint);
