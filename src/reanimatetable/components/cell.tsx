@@ -100,13 +100,6 @@ function getContent(icon: Icon, textDom: React.ReactNode) {
           {textDom}
         </View>
       );
-    case Icon.RIGHT:
-      return (
-        <View style={styles.row}>
-          {textDom}
-          {getIcon(icon)}
-        </View>
-      );
     case Icon.TOP:
       return (
         <View>
@@ -122,7 +115,13 @@ function getContent(icon: Icon, textDom: React.ReactNode) {
         </View>
       );
     default:
-      return textDom;
+    case Icon.RIGHT:
+      return (
+        <View style={styles.row}>
+          {textDom}
+          {getIcon(icon)}
+        </View>
+      );
   }
 }
 
