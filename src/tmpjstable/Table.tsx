@@ -39,8 +39,8 @@ function mergeCells(props: Props, preRows?: number, preColumns?: number): Merged
     const tableInfo = tableData?.getTableInfo();
     if (!columnArr.length || !columnArr[0].getDatas().length) return result;
 
-    const rows = preColumns || columnArr.length;
-    const cols = preRows || columnArr[0].getDatas().length;
+    const rows = preColumns === undefined ? columnArr.length : preColumns;
+    const cols = preRows === undefined ? columnArr[0].getDatas().length: preRows;
     const visited = Array.from({ length: rows }, () => new Array(cols).fill(false));
 
     // 定义四个方向的偏移量（上、右、下、左）
@@ -253,8 +253,11 @@ function getContentSize(props: Props) {
     tableData.getChildColumns().forEach((column) => {
         width += column.getComputeWidth() + getExtraWidth();
     });
-    tableData.getChildColumns()[0].getDatas().forEach((data) => {
-        height += (data.getCache()?.getHeight() || 0) + getExtraHeight();
+    // tableData.getChildColumns()[0].getDatas().forEach((data) => {
+    //     height += (data.getCache()?.getHeight() || 0) + getExtraHeight();
+    // });
+    tableData?.getTableInfo()?.getLineHeightArray()?.forEach((lineHeight) => {
+        height += lineHeight + getExtraHeight();
     });
     return { width, height };
 }
