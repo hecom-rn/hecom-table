@@ -151,6 +151,9 @@ function genTopTableItem(subMergedCells: MergedCell[], rowNum: number, props: Pr
         const icons = subMergedCells.map((item) => (
             item.icon
         ));
+        const textStyleArr = subMergedCells.map((item) => ({
+            ...styles.text, color:item.textColor, fontSize: item.fontSize
+        }));
         const onPressFuncs = subMergedCells.map((item) => (
             () => {onClickEvent && onClickEvent({
                 keyIndex: item.keyIndex,
@@ -165,7 +168,8 @@ function genTopTableItem(subMergedCells: MergedCell[], rowNum: number, props: Pr
                 onPressFuncs={onPressFuncs}
                 style={[{ width }]} 
                 heightArr={heightArr} 
-                textStyle={[styles.text, {color:subMergedCells?.[0].textColor, fontSize: subMergedCells?.[0].fontSize}]}
+                textStyleArr={textStyleArr}
+                // textStyle={[styles.text, {color:subMergedCells?.[0].textColor, fontSize: subMergedCells?.[0].fontSize}]}
             />
         )
     }

@@ -13,17 +13,18 @@ interface ColProps {
   heightArr?: number[];
   flex?: number;
   textStyle?: StyleProp<TextStyle>;
+  textStyleArr?: StyleProp<TextStyle>[];
 }
 
 export const Col: FC<ColProps> = ({ data, style, width, heightArr, flex, textStyle,
-  icons, onPressFuncs, ...props }) => {
+  icons, onPressFuncs, textStyleArr, ...props }) => {
   return data ? (
     <View style={StyleSheet.flatten([{ width: width ?? (flex ? undefined : 1), flex }, style])}>
       {data.map((item, i) => {
         const height = heightArr?.[i];
         return (
           <Cell key={i} data={item}
-          icon={icons?.[i]} onPress={onPressFuncs?.[i]} width={width} height={height} textStyle={textStyle} {...props} />
+          icon={icons?.[i]} onPress={onPressFuncs?.[i]} width={width} height={height} textStyle={textStyleArr?.[i] || textStyle} {...props} />
         );
       })}
     </View>
