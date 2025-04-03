@@ -6,7 +6,7 @@ import type { Column } from "../form/data/column/Column";
 import { Text } from "react-native-svg";
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, type GestureEvent, type PanGestureHandlerEventPayload } from "react-native-gesture-handler";
 import Animated, { runOnJS, useAnimatedGestureHandler, useAnimatedStyle, useSharedValue, withDecay } from "react-native-reanimated";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { max } from "zrender/lib/core/vector";
 
 interface Props {
@@ -16,6 +16,7 @@ interface Props {
     frozenColumns?: number;
     onClickEvent?: (data: any) => void;
     onMounted?: () => void;
+    onContentSize?: (obj: {width: number, height: number })=> void;
 }
 
 type MergedCell = {
@@ -263,10 +264,17 @@ function getContentSize(props: Props) {
 }
 
 export default function Table(props: Props) {
-    const { style, tableData, frozenRows = 0, frozenColumns = 0, onMounted } = props;
+    const { style, tableData, frozenRows = 0, frozenColumns = 0, onMounted, onContentSize } = props;
     if (!tableData) return <View />;
     const rowNums = tableData.getChildColumns()?.[0].getDatas().length;
+    const contentWidth = useRef(0);
+    const contentHeight = useRef(0);
     const { width, height } = getContentSize(props);
+    if (contentWidth.current !== width || contentHeight.current !== height) {
+        contentWidth.current = width;
+        contentHeight.current = height;
+        onContentSize && onContentSize({width: width, height: height});
+    }
     const maxScrollX = width - (style.width || 0);
     const maxScrollY = height - (style.height || 0);
 

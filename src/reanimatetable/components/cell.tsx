@@ -70,7 +70,9 @@ export const Cell: FC<CellProps> = ({
 
   return (
     <TouchableOpacity 
-      onPress={onPress}
+      onPress={() => {
+        onPress?.();
+      }}
       style={StyleSheet.flatten([
         {
           borderTopWidth,

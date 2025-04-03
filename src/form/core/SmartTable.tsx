@@ -142,7 +142,7 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
         //         />
         //     </View>
         // );
-        const { style, onClickEvent, onMounted } = this.props;
+        const { style, onClickEvent, onMounted, onContentSize } = this.props;
 
         return (
             <TMPJSTable 
@@ -152,6 +152,7 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
                 frozenRows={this.props.frozenRows} 
                 style={this.props.style} 
                 onMounted={onMounted}
+                onContentSize={onContentSize}
             />
         );
 
