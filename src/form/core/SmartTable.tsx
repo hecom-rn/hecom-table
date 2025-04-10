@@ -142,7 +142,7 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
         //         />
         //     </View>
         // );
-        const { style, onClickEvent, onMounted, onContentSize } = this.props;
+        const { style, onClickEvent, onMounted, onContentSize, onScroll } = this.props;
 
         return (
             <TMPJSTable 
@@ -153,6 +153,7 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
                 style={this.props.style} 
                 onMounted={onMounted}
                 onContentSize={onContentSize}
+                onScroll={onScroll}
             />
         );
 

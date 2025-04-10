@@ -5,7 +5,7 @@ import { Icon, type Cell } from "../table/bean/Cell";
 import type { Column } from "../form/data/column/Column";
 import { Text } from "react-native-svg";
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, type GestureEvent, type PanGestureHandlerEventPayload } from "react-native-gesture-handler";
-import Animated, { runOnJS, useAnimatedGestureHandler, useAnimatedStyle, useSharedValue, withDecay } from "react-native-reanimated";
+import Animated, { runOnJS, useAnimatedGestureHandler, useAnimatedReaction, useAnimatedStyle, useSharedValue, withDecay } from "react-native-reanimated";
 import { useEffect, useRef, useState } from "react";
 import { max } from "zrender/lib/core/vector";
 
@@ -15,6 +15,7 @@ interface Props {
     frozenRows?: number;
     frozenColumns?: number;
     onClickEvent?: (data: any) => void;
+    onScroll?: (data: any) => void;
     onMounted?: () => void;
     onContentSize?: (obj: {width: number, height: number })=> void;
 }
@@ -264,7 +265,7 @@ function getContentSize(props: Props) {
 }
 
 export default function Table(props: Props) {
-    const { style, tableData, frozenRows = 0, frozenColumns = 0, onMounted, onContentSize } = props;
+    const { style, tableData, frozenRows = 0, frozenColumns = 0, onMounted, onContentSize, onScroll } = props;
     if (!tableData) return <View />;
     const rowNums = tableData.getChildColumns()?.[0].getDatas().length;
     const contentWidth = useRef(0);
@@ -288,11 +289,41 @@ export default function Table(props: Props) {
     const tmpLeft = genTopTable(mergedColumnCells, rowNums - frozenRows, props);
     const tmpContent = genTopTable(mergedContentCells, rowNums - frozenRows, props);
 
-   
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
     const preTranslateX = useSharedValue(0);
     const preTranslateY = useSharedValue(0);
+
+    useAnimatedReaction(
+        () => translateX.value, // 依赖值
+        (currentValue, previousValue) => {
+            onScroll && runOnJS(onScroll)?.({ nativeEvent: {
+                translateX: -currentValue,
+                translateY: -translateY.value
+            }});
+            // console.log(`XXX值从 ${previousValue} 变为 ${currentValue}`);
+            // onScroll && onScroll({ nativeEvent: {
+            //     translateX: currentValue,
+            //     translateY: translateY.value
+            // }});
+        }
+    );
+
+    useAnimatedReaction(
+        () => translateY.value, // 依赖值
+        (currentValue, previousValue) => {
+            onScroll && runOnJS(onScroll)?.({ nativeEvent: {
+                translateX: -translateX.value,
+                translateY: -currentValue
+            }});
+            // 'worklet';
+            // console.log(`YYY值从 ${previousValue} 变为 ${currentValue}`);
+            // onScroll && onScroll({ nativeEvent: {
+            //     translateX: translateX.value,
+            //     translateY: currentValue
+            // }});
+        }
+    );
 
     const animatedStyleX = useAnimatedStyle(() => ({
         transform: [{ translateX: translateX.value }],
