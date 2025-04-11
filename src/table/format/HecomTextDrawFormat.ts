@@ -208,7 +208,7 @@ export class HecomTextDrawFormat extends TextDrawFormat<Cell> {
             width = Math.max(icon.getWidth(), textWidth) + paddingHorizontal;
         }
         const height = config.getPaint().getTextSize() + 4; // 临时计算高度，后续需要替换
-        const MAX_WIDTH = 120; // 临时固定一个最大宽度，后续适配换行等功能
+        const MAX_WIDTH = 120 + Math.max(0, cell?.getTextPaddingLeft() || 0) + Math.max(0, cell?.getTextPaddingRight() || 0); // 临时固定一个最大宽度，后续适配换行等功能
         if (width > MAX_WIDTH) {
             const maxTextWidth = this.getMaxTextWidth(icon, paddingHorizontal, MAX_WIDTH);
             const stringArr: string[] = config.getPaint().splitTextWithMaxWidth(charSequence, maxTextWidth);

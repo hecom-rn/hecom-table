@@ -31,6 +31,8 @@ type MergedCell = {
     colSpan: number;
     icon?: Icon;
     textColor?: string;
+    textPaddingLeft?: number;
+    textPaddingRight?: number;
     fontSize?: number;
 };
 
@@ -104,6 +106,8 @@ function mergeCells(props: Props, preRows?: number, preColumns?: number): Merged
                     height: height + getExtraHeight() * (maxCol - minCol + 1),
                     icon: columnArr[minRow].getDatas()[minCol].getIcon(),
                     textColor: columnArr[minRow].getDatas()[minCol].getTextColor(),
+                    textPaddingLeft: columnArr[minRow].getDatas()[minCol].getTextPaddingLeft(),
+                    textPaddingRight: columnArr[minRow].getDatas()[minCol].getTextPaddingRight(),
                     fontSize: columnArr[minRow].getDatas()[minCol].getFontSize()
                 });
             }
@@ -130,7 +134,7 @@ function genTopTableItem(subMergedCells: MergedCell[], rowNum: number, props: Pr
                 data={subMergedCells[0].textArr?.join('\n')} 
                 icon={subMergedCells[0].icon} 
                 style={{ width: subMergedCells[0].width, height: subMergedCells[0].height }} 
-                textStyle={[styles.text, {color:subMergedCells[0].textColor, fontSize: subMergedCells[0].fontSize}]}
+                textStyle={[styles.text, {color:subMergedCells[0].textColor, fontSize: subMergedCells[0].fontSize, paddingLeft: subMergedCells[0].textPaddingLeft, paddingRight: subMergedCells[0].textPaddingRight}]}
                 onPress={() => {
                     onClickEvent && onClickEvent({
                         keyIndex: subMergedCells[0].keyIndex,
@@ -154,7 +158,7 @@ function genTopTableItem(subMergedCells: MergedCell[], rowNum: number, props: Pr
             item.icon
         ));
         const textStyleArr = subMergedCells.map((item) => ({
-            ...styles.text, color:item.textColor, fontSize: item.fontSize
+            ...styles.text, color:item.textColor, fontSize: item.fontSize, paddingLeft: item.textPaddingLeft, paddingRight: item.textPaddingRight
         }));
         const onPressFuncs = subMergedCells.map((item) => (
             () => {onClickEvent && onClickEvent({
@@ -195,7 +199,7 @@ function genTopTableItem(subMergedCells: MergedCell[], rowNum: number, props: Pr
                 }]}
                 widthArr={[subMergedCells[maxIndex].width]}
                 style={[{ height: subMergedCells[maxIndex].height, }]}
-                textStyle={[styles.text, {color:subMergedCells?.[0].textColor, fontSize: subMergedCells?.[0].fontSize}]}
+                textStyle={[styles.text, {color:subMergedCells?.[0].textColor, fontSize: subMergedCells?.[0].fontSize, paddingLeft: subMergedCells?.[0].textPaddingLeft, paddingRight: subMergedCells?.[0].textPaddingRight}]}
             />
             {genTopTable(subMergedCells.slice(maxIndex + 1), rowNum - (subMergedCells[maxIndex].row - subMergedCells[0].row + subMergedCells[maxIndex].rowSpan), props)}
         </TableWrapper>
