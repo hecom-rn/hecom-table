@@ -513,9 +513,9 @@ export default function Table(props: Props) {
         contentOffset: { y: -translateY.value }
     }));
 
-    const animatedProps2 = useAnimatedProps(() => ({
-        contentOffset: { y: -translateY.value }
-    }));
+    // const animatedProps2 = useAnimatedProps(() => ({
+    //     contentOffset: { y: -translateY.value }
+    // }));
 
     // 第一个列表的滚动处理
     // const scrollHandler2 = useAnimatedScrollHandler({
@@ -553,39 +553,18 @@ export default function Table(props: Props) {
                                 </ReAnimatedTable>
                             </Animated.View> */}
                            
-                            {leftArray.map((arr, index) => {
-                                return <Animated.FlatList
-                                    pointerEvents="none"
-                                    animatedProps={animatedProps1}
-                                    useNativeDriver={true}
-                                    scrollEventThrottle={16}
-                                    style={[ { width: arr?.[0]?.style?.width}]}
-                                    data={arr}
-                                    renderItem={({ item, index }) => {
-                                        return (
-                                            // <View style= {[item?.style, {backgroundColor: index % 2 === 0 ? 'green' : 'gray'}]}>
-                                                <CellComponent 
-                                                    data={item?.data} 
-                                                    icon={item?.icon} 
-                                                    style={item?.style} 
-                                                    textStyle={item?.textStyle}
-                                                    onPress={item?.onPress}
-                                                    borderStyle={styles.borderStyle}
-                                                />
-                                            // </View>
-                                        );
-                                    }}
-                                />
-                            })}
+                            {getFlatListComponentArray(leftArray, animatedProps1, {})}
                         </View>
-                        <View style={[styles.hideOverFlow, {flexDirection: 'row', width: 400, backgroundColor: 'yellow'}]}>
+                        <View style={[styles.hideOverFlow, {flexDirection: 'row'}]}>
                             {/* <Animated.View style={[{backgroundColor: 'blue', width: 1000, height: 200}]}>
                                 <ReAnimatedTable borderStyle={styles.borderStyle} >
                                     {tmpContent}
                                 </ReAnimatedTable>
                             </Animated.View> */}
+
+                            {getFlatListComponentArray(contentArray, animatedProps1, animatedStyleX)}
                             {/* <Animated.View style={[animatedStyleX, {flexDirection: 'row', width: 300, flex: 1, backgroundColor: 'blue'}]}> */}
-                                <Animated.FlatList
+                                {/* <Animated.FlatList
                                     // scrollEnabled={false}
                                     pointerEvents="none"
                                     animatedProps={animatedProps2}
@@ -620,7 +599,7 @@ export default function Table(props: Props) {
                                     style={[animatedStyleX, {width: 100, backgroundColor: 'green'}]}
                                     data={Array.from({ length: 100 }).map((_, index) => ({}))}
                                     renderItem={({ item, index }) => <View style={{ height: 40, backgroundColor: index % 2 == 0 ? 'blue' : 'red' }} ><Text>`index = ${index}abcdeghijklmnopqrstuvwxyz`</Text></View>}
-                                />
+                                /> */}
                                 {/* </Animated.View> */}
                         </View>
                     </View>               
@@ -628,6 +607,53 @@ export default function Table(props: Props) {
             </GestureDetector>
         </GestureHandlerRootView>
     );
+}
+
+function getFlatListComponentArray(dataArray: any[], animatedProps1: any, style: ViewStyle) {
+    return dataArray.map((arr, index) => {
+        return <Animated.FlatList
+            pointerEvents="none"
+            animatedProps={animatedProps1}
+            useNativeDriver={true}
+            persistentScrollbar={false}
+            scrollEventThrottle={16}
+            style={[style, { width: arr?.[0]?.style?.width}]}
+            data={arr}
+            renderItem={({ item, index }) => {
+                if (Array.isArray(item)) {
+                    return (
+                        <View style={styles.row}>
+                            {item?.map((innerItem, innerIndex) => {
+                                return (
+                                    <ReAnimatedTable borderStyle={styles.borderStyle} >
+                                        <Col
+                                            data={innerItem?.map((i: ListItem) => i.data)} 
+                                            icons={innerItem?.map((i: ListItem) => i.icon)} 
+                                            onPressFuncs={innerItem?.map((i: ListItem) => i.onPress)}
+                                            style={[{ width: innerItem?.[0]?.style?.width }]} 
+                                            heightArr={innerItem?.map((i: ListItem) => i.style?.height)} 
+                                            textStyleArr={innerItem?.map((i: ListItem) => i.textStyle)}
+                                        />
+                                    </ReAnimatedTable>
+                                );
+                            })}
+                        </View>
+                    );
+                } else {
+                    return (
+                        <CellComponent 
+                            data={item?.data} 
+                            icon={item?.icon} 
+                            style={item?.style} 
+                            textStyle={item?.textStyle}
+                            onPress={item?.onPress}
+                            borderStyle={styles.borderStyle}
+                        />
+                    );
+                }
+            }}
+        />
+    })
 }
 
 const styles = StyleSheet.create({
