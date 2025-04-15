@@ -1,11 +1,10 @@
-import { View, ScrollView, StyleSheet, Dimensions } from "react-native";
+import { View, ScrollView, StyleSheet, Dimensions, FlatList, Text, type ViewStyle, type TextStyle } from "react-native";
 import { Row, TableWrapper, Col, Cell as CellComponent, Table as ReAnimatedTable } from "../reanimatetable/index";
 import { TableData } from "../form/data/table/TableData";
 import { Icon, type Cell } from "../table/bean/Cell";
 import type { Column } from "../form/data/column/Column";
-import { Text } from "react-native-svg";
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, type GestureEvent, type PanGestureHandlerEventPayload } from "react-native-gesture-handler";
-import Animated, { runOnJS, useAnimatedGestureHandler, useAnimatedReaction, useAnimatedStyle, useSharedValue, withDecay } from "react-native-reanimated";
+import Animated, { runOnJS, useAnimatedGestureHandler, useAnimatedProps, useAnimatedReaction, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withDecay } from "react-native-reanimated";
 import { useEffect, useRef, useState } from "react";
 import { max } from "zrender/lib/core/vector";
 
@@ -34,6 +33,15 @@ type MergedCell = {
     textPaddingLeft?: number;
     textPaddingRight?: number;
     fontSize?: number;
+};
+
+type ListItem = {
+    data?: string;
+    icon?: Icon;
+    style?: ViewStyle; 
+    textStyle?: TextStyle;
+    onPress?: () => void;
+    tableItemArray?: ListItem[];
 };
 
 function mergeCells(props: Props, preRows?: number, preColumns?: number): MergedCell[] {
@@ -251,6 +259,101 @@ function genTopTable(mergedRowCells: MergedCell[], rowNum: number, props: Props)
     );
 }
 
+function getFlatListData(subMergedCells: MergedCell[], rowNum: number, props: Props):any {
+    const { onClickEvent } = props;
+    const maxColumnSpan = subMergedCells.reduce((max, item) => Math.max(max, item.col + item.colSpan), 0);
+    const minColumnSpan = subMergedCells.reduce((min, item) => Math.min(min, item.col + item.colSpan), Number.MAX_VALUE);
+    if (maxColumnSpan === minColumnSpan) {
+        const width = subMergedCells.reduce((max, item) => Math.max(max, item.width), 0);
+        const heightArr = subMergedCells.map((item) => item.height);
+        const data = subMergedCells.map((item) => (
+          item.textArr?.join('\n')  
+        ));
+        const icons = subMergedCells.map((item) => (
+            item.icon
+        ));
+        const textStyleArr = subMergedCells.map((item) => ({
+            ...styles.text, color:item.textColor, fontSize: item.fontSize, paddingLeft: item.textPaddingLeft, paddingRight: item.textPaddingRight
+        }));
+        const onPressFuncs = subMergedCells.map((item) => (
+            () => {onClickEvent && onClickEvent({
+                keyIndex: item.keyIndex,
+                rowIndex: item.row,
+                columnIndex: item.col,
+            })}
+        ));
+        return data?.map((item, index) => {
+            return {
+                data: item,
+                icon: icons[index],
+                style: { width, height: heightArr[index]  },
+                textStyle: textStyleArr[index],
+                onPress: onPressFuncs[index],
+            };
+        });
+    }
+    const maxIndex = subMergedCells.reduce(
+        (maxIdx, currentValue, currentIndex) => 
+            currentValue.colSpan > subMergedCells[maxIdx].colSpan ? currentIndex : maxIdx,
+        0
+    );
+    const item1 = getFlatListDataArray(subMergedCells.slice(0, maxIndex), subMergedCells[maxIndex].row - subMergedCells[0].row, props, true);
+    const item2 = {
+        data: subMergedCells[maxIndex].textArr?.join('\n'),
+        icon: subMergedCells[maxIndex].icon,
+        style: { width: subMergedCells[maxIndex].width, height: subMergedCells[maxIndex].height  },
+        textStyle: [styles.text, {color:subMergedCells?.[0].textColor, fontSize: subMergedCells?.[0].fontSize, paddingLeft: subMergedCells?.[0].textPaddingLeft, paddingRight: subMergedCells?.[0].textPaddingRight}],
+        onPress: () => {
+            onClickEvent && onClickEvent({
+                keyIndex: subMergedCells[maxIndex].keyIndex,
+                rowIndex: subMergedCells[maxIndex].row,
+                columnIndex: subMergedCells[maxIndex].col,
+            });
+        },
+    };
+    const item3 = getFlatListDataArray(subMergedCells.slice(maxIndex + 1), rowNum - (subMergedCells[maxIndex].row - subMergedCells[0].row + subMergedCells[maxIndex].rowSpan), props, true);
+    return [item1, item2, item3];
+}
+
+function getFlatListDataArray(mergedRowCells: MergedCell[], rowNum: number, props: Props, asItem: boolean = false) {
+    mergedRowCells.sort((a, b) => {
+        if (a.col === b.col) {
+            return a.row - b.row;
+        }
+        return a.col - b.col;
+    });
+    const mergedCellsArr = [];
+    let i = 0;
+    while (i < mergedRowCells.length) {
+        let startRowIndex = i;
+        let endColIndex = mergedRowCells[i].col + mergedRowCells[i].colSpan - 1;
+        let hasRowNum = 0;
+
+        while (i < mergedRowCells.length && hasRowNum < rowNum) {
+            if (mergedRowCells[i].col + mergedRowCells[i].colSpan - 1 == endColIndex) {
+                hasRowNum += mergedRowCells[i].rowSpan;
+                i++;
+            } else if (mergedRowCells[i].col + mergedRowCells[i].colSpan - 1 > endColIndex) {
+                endColIndex = mergedRowCells[i].col + mergedRowCells[i].colSpan - 1;
+                hasRowNum = 0;
+            } else {
+                i++;
+            }
+        }
+        const subMergedCells = mergedRowCells.slice(startRowIndex, i)?.sort((a, b) => {
+            if (a.row === b.row) {
+                return a.col - b.col;
+            }
+            return a.row - b.row;
+        });
+        mergedCellsArr.push(subMergedCells);
+    }
+    const result = mergedCellsArr.map((subMergedCells) => {
+        return getFlatListData(subMergedCells, rowNum, props);
+    });
+    return result;
+}
+
 function getContentSize(props: Props) {
     const { tableData } = props;
     if (!tableData) return { width: 0, height: 0 };
@@ -265,7 +368,7 @@ function getContentSize(props: Props) {
     tableData?.getTableInfo()?.getLineHeightArray()?.forEach((lineHeight) => {
         height += lineHeight + getExtraHeight();
     });
-    return { width, height };
+    return { width, height: height + 2 };
 }
 
 export default function Table(props: Props) {
@@ -281,7 +384,7 @@ export default function Table(props: Props) {
         onContentSize && onContentSize({width: width, height: height});
     }
     const maxScrollX = width - (style.width || 0);
-    const maxScrollY = height - (style.height || 0);
+    const maxScrollY = 6000; // height - (style.height || 0);
 
     const mergedCornerCells = mergeCells(props, frozenRows, frozenColumns);
     const mergedRowCells = mergeCells(props, frozenRows)?.filter((item) => item.col >= frozenColumns);
@@ -292,6 +395,9 @@ export default function Table(props: Props) {
     const tmpTop = genTopTable(mergedRowCells, frozenRows, props);
     const tmpLeft = genTopTable(mergedColumnCells, rowNums - frozenRows, props);
     const tmpContent = genTopTable(mergedContentCells, rowNums - frozenRows, props);
+
+    const leftArray = getFlatListDataArray(mergedColumnCells, rowNums - frozenRows, props);
+    const contentArray = getFlatListDataArray(mergedContentCells, rowNums - frozenRows, props);
 
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
@@ -331,6 +437,12 @@ export default function Table(props: Props) {
 
     const animatedStyleX = useAnimatedStyle(() => ({
         transform: [{ translateX: translateX.value }],
+    }));
+    const animatedStyleX2 = useAnimatedStyle(() => ({
+        transform: [{ translateX: translateX.value + 100 }],
+    }));
+    const animatedStyleX3 = useAnimatedStyle(() => ({
+        transform: [{ translateX: translateX.value + 200 }],
     }));
     const animatedStyleY = useAnimatedStyle(() => ({
         transform: [ { translateY: translateY.value }],
@@ -385,6 +497,38 @@ export default function Table(props: Props) {
         };
       }, []);
 
+    const scrollOffset1 = useSharedValue(0);
+
+    const scrollOffset2 = useSharedValue(0);
+
+    // 第一个列表的滚动处理
+    // const scrollHandler1 = useAnimatedScrollHandler({
+    //     onScroll: (event) => {
+    //         scrollOffset1.value = event.contentOffset.y;
+    //     },
+    // });
+
+    // 第二个列表的动画属性
+    const animatedProps1 = useAnimatedProps(() => ({
+        contentOffset: { y: -translateY.value }
+    }));
+
+    const animatedProps2 = useAnimatedProps(() => ({
+        contentOffset: { y: -translateY.value }
+    }));
+
+    // 第一个列表的滚动处理
+    // const scrollHandler2 = useAnimatedScrollHandler({
+    //     onScroll: (event) => {
+    //         scrollOffset2.value = event.contentOffset.y;
+    //     },
+    // });
+
+    // // 第二个列表的动画属性
+    // const animatedProps2 = useAnimatedProps(() => ({
+    //     contentOffset: { y: scrollOffset2.value }
+    // }));
+
     return (
         <GestureHandlerRootView>
             <GestureDetector gesture={gestureHandler}>
@@ -401,20 +545,83 @@ export default function Table(props: Props) {
                             </Animated.View>
                         </View>
                     </View>
-                    <View style={styles.row}>
-                        <View style={styles.hideOverFlow}>
-                            <Animated.View style={[animatedStyleY]}>
+                    <View style={[styles.row]}>
+                        <View style={[styles.hideOverFlow, {flexDirection: 'row'}]}>
+                            {/* <Animated.View  style={[animatedStyleY]}>
                                 <ReAnimatedTable borderStyle={styles.borderStyle} >
                                     {tmpLeft}
                                 </ReAnimatedTable>
-                            </Animated.View>
+                            </Animated.View> */}
+                           
+                            {leftArray.map((arr, index) => {
+                                return <Animated.FlatList
+                                    pointerEvents="none"
+                                    animatedProps={animatedProps1}
+                                    useNativeDriver={true}
+                                    scrollEventThrottle={16}
+                                    style={[ { width: arr?.[0]?.style?.width}]}
+                                    data={arr}
+                                    renderItem={({ item, index }) => {
+                                        return (
+                                            // <View style= {[item?.style, {backgroundColor: index % 2 === 0 ? 'green' : 'gray'}]}>
+                                                <CellComponent 
+                                                    data={item?.data} 
+                                                    icon={item?.icon} 
+                                                    style={item?.style} 
+                                                    textStyle={item?.textStyle}
+                                                    onPress={item?.onPress}
+                                                    borderStyle={styles.borderStyle}
+                                                />
+                                            // </View>
+                                        );
+                                    }}
+                                />
+                            })}
                         </View>
-                        <View style={styles.hideOverFlow}>
-                            <Animated.View style={animatedStyle}>
+                        <View style={[styles.hideOverFlow, {flexDirection: 'row', width: 400, backgroundColor: 'yellow'}]}>
+                            {/* <Animated.View style={[{backgroundColor: 'blue', width: 1000, height: 200}]}>
                                 <ReAnimatedTable borderStyle={styles.borderStyle} >
                                     {tmpContent}
                                 </ReAnimatedTable>
-                            </Animated.View>
+                            </Animated.View> */}
+                            {/* <Animated.View style={[animatedStyleX, {flexDirection: 'row', width: 300, flex: 1, backgroundColor: 'blue'}]}> */}
+                                <Animated.FlatList
+                                    // scrollEnabled={false}
+                                    pointerEvents="none"
+                                    animatedProps={animatedProps2}
+                                    useNativeDriver={true}
+                                    // onScroll={scrollHandler1}
+                                    // animatedProps={animatedProps2}
+                                    scrollEventThrottle={16}
+                                    style={[animatedStyleX, {width: 200, backgroundColor: 'green'}]}
+                                    data={Array.from({ length: 100 }).map((_, index) => ({}))}
+                                    renderItem={({ item, index }) => <View style={{ height: 40, backgroundColor: index % 2 == 0 ? 'blue' : 'red' }} ><Text>`index = ${index}abcdeghijklmnopqrstuvwxyz`</Text></View>}
+                                />
+                                <Animated.FlatList
+                                    // scrollEnabled={false}
+                                    pointerEvents="none"
+                                    animatedProps={animatedProps2}
+                                    useNativeDriver={true}
+                                    // onScroll={scrollHandler1}
+                                    // animatedProps={animatedProps2}
+                                    scrollEventThrottle={16}
+                                    style={[animatedStyleX, {width: 100, backgroundColor: 'green'}]}
+                                    data={Array.from({ length: 100 }).map((_, index) => ({}))}
+                                    renderItem={({ item, index }) => <View style={{ height: 40, backgroundColor: index % 2 == 0 ? 'blue' : 'red' }} ><Text>`index = ${index}abcdeghijklmnopqrstuvwxyz`</Text></View>}
+                                />
+                                <Animated.FlatList
+                                    // scrollEnabled={false}
+                                    pointerEvents="none"
+                                    animatedProps={animatedProps2}
+                                    useNativeDriver={true}
+                                    // onScroll={scrollHandler1}
+                                    // animatedProps={animatedProps2}
+                                    scrollEventThrottle={16}
+                                    style={[animatedStyleX, {width: 100, backgroundColor: 'green'}]}
+                                    data={Array.from({ length: 100 }).map((_, index) => ({}))}
+                                    renderItem={({ item, index }) => <View style={{ height: 40, backgroundColor: index % 2 == 0 ? 'blue' : 'red' }} ><Text>`index = ${index}abcdeghijklmnopqrstuvwxyz`</Text></View>}
+                                />
+                                {/* </Animated.View> */}
                         </View>
                     </View>               
                 </View>
@@ -426,6 +633,9 @@ export default function Table(props: Props) {
 const styles = StyleSheet.create({
     hideOverFlow: {
         overflow: 'hidden',
+    },
+    abc: {
+        alignSelf: 'stretch',
     },
     row: { flexDirection: 'row' },
     borderStyle: { borderWidth: 1, borderColor: '#C1C0B9' },
