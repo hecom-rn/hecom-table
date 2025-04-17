@@ -89,11 +89,12 @@
     "@types/react": "^18.2.44"
   },
   "peerDependencies": {
+    "@hecom/listener": "*",
     "react": "*",
     "react-native": "*",
     "react-native-gesture-handler": "*",
-    "react-native-svg": "*",
     "react-native-skia": "*",
+    "react-native-svg": "*",
     "zrender": "*"
   },
   "packageManager": "yarn@3.6.1",
