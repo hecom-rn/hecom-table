@@ -118,7 +118,7 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
         //     }
         // });
         // this.forceUpdate();
-        this.initTableData();
+        this.initTableData(this.props);
         this.notifyDataChanged();
         this.forceUpdate();
     }
@@ -128,8 +128,16 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
     }
 
     componentDidUpdate() {
-        this.initTableData();
+        this.initTableData(this.props);
         this.notifyDataChanged();
+    }
+
+    UNSAFE_componentWillReceiveProps(nextProps: Readonly<SmartTableProps>, nextContext: any): void {
+        if (nextProps.tableData !== this.props.tableData) {
+            this.initTableData(nextProps);
+            this.notifyDataChanged();
+            this.forceUpdate();
+        }
     }
 
     public render() {
@@ -217,8 +225,8 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
         return { width, height };
     }
 
-    protected initTableData() {
-        const { tableData } = this.props;
+    protected initTableData(props: SmartTableProps) {
+        const { tableData } = props || {};
         const { width, height } = this.getWidthAndHeight();
         // this.zrender.resize({
         //     width,
