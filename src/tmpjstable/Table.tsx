@@ -6,6 +6,7 @@ import type { Column } from "../form/data/column/Column";
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, type GestureEvent, type PanGestureHandlerEventPayload } from "react-native-gesture-handler";
 import Animated, { runOnJS, useAnimatedGestureHandler, useAnimatedProps, useAnimatedReaction, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withDecay } from "react-native-reanimated";
 import { useEffect, useRef, useState } from "react";
+import Listener from '@hecom/listener';
 import { max } from "zrender/lib/core/vector";
 
 interface Props {
@@ -18,6 +19,8 @@ interface Props {
     onMounted?: () => void;
     onContentSize?: (obj: {width: number, height: number })=> void;
 }
+
+const actionKey = 'com.hecom.crm.pro.ACTION_SCROLL_ENABLED';
 
 type MergedCell = {
     textArr: string[] | undefined;
@@ -454,6 +457,7 @@ export default function Table(props: Props) {
     const gestureHandler = Gesture.Pan().onBegin((event) => {
         preTranslateX.value = translateX.value;
         preTranslateY.value = translateY.value;
+        runOnJS(Listener.trigger)?.(actionKey, false);
     }).onUpdate((event) => {
         'worklet';
         if (maxScrollX > 0) {
@@ -485,6 +489,7 @@ export default function Table(props: Props) {
                 clamp: [-maxScrollY, 0], // 限制垂直滑动范围
             });
         }
+        runOnJS(Listener.trigger)?.(actionKey, true);
     });
 
     useEffect(() => {

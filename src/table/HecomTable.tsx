@@ -37,7 +37,7 @@ export class HecomTable extends SmartTable<Cell> {
     }
 
     componentDidUpdate() {
-        this.initTableData();
+        this.initTableData(this.props);
         const { frozenRows, frozenColumns, tableData, frozenPoint, frozenCount } = this.props;
         this.mClickHandler = new ClickHandler(this);
         this.tableData?.setOnItemClickListener(this.mClickHandler);
