@@ -386,8 +386,15 @@ export default function Table(props: Props) {
         contentHeight.current = height;
         onContentSize && onContentSize({width: width, height: height});
     }
+    let topHeight = 0;
+    const lineHeightArr = tableData?.getTableInfo()?.getLineHeightArray();
+    for(let i = 0; i < frozenRows; i++) {
+        topHeight += lineHeightArr?.[i] || 0;
+    }
+
     const maxScrollX = width - (style.width || 0);
-    const maxScrollY = 6000; // height - (style.height || 0);
+    const maxScrollY = height - topHeight;
+    const flatListHeight = Math.max(0, (style.height || 0) - topHeight);
 
     const mergedCornerCells = mergeCells(props, frozenRows, frozenColumns);
     const mergedRowCells = mergeCells(props, frozenRows)?.filter((item) => item.col >= frozenColumns);
@@ -506,33 +513,13 @@ export default function Table(props: Props) {
 
     const scrollOffset2 = useSharedValue(0);
 
-    // 第一个列表的滚动处理
-    // const scrollHandler1 = useAnimatedScrollHandler({
-    //     onScroll: (event) => {
-    //         scrollOffset1.value = event.contentOffset.y;
-    //     },
-    // });
-
-    // 第二个列表的动画属性
     const animatedProps1 = useAnimatedProps(() => ({
         contentOffset: { y: -translateY.value }
     }));
 
-    // const animatedProps2 = useAnimatedProps(() => ({
-    //     contentOffset: { y: -translateY.value }
-    // }));
-
-    // 第一个列表的滚动处理
-    // const scrollHandler2 = useAnimatedScrollHandler({
-    //     onScroll: (event) => {
-    //         scrollOffset2.value = event.contentOffset.y;
-    //     },
-    // });
-
-    // // 第二个列表的动画属性
-    // const animatedProps2 = useAnimatedProps(() => ({
-    //     contentOffset: { y: scrollOffset2.value }
-    // }));
+    const animatedProps2 = useAnimatedProps(() => ({
+        contentOffset: { y: -translateY.value }
+    }));
 
     return (
         <GestureHandlerRootView>
@@ -550,7 +537,7 @@ export default function Table(props: Props) {
                             </Animated.View>
                         </View>
                     </View>
-                    <View style={[styles.row]}>
+                    <View style={[styles.row, { flex: 1 }]}>
                         <View style={[styles.hideOverFlow, {flexDirection: 'row'}]}>
                             {/* <Animated.View  style={[animatedStyleY]}>
                                 <ReAnimatedTable borderStyle={styles.borderStyle} >
@@ -567,7 +554,7 @@ export default function Table(props: Props) {
                                 </ReAnimatedTable>
                             </Animated.View> */}
 
-                            {getFlatListComponentArray(contentArray, animatedProps1, animatedStyleX)}
+                            {getFlatListComponentArray(contentArray, animatedProps2, animatedStyleX)}
                             {/* <Animated.View style={[animatedStyleX, {flexDirection: 'row', width: 300, flex: 1, backgroundColor: 'blue'}]}> */}
                                 {/* <Animated.FlatList
                                     // scrollEnabled={false}
@@ -614,16 +601,20 @@ export default function Table(props: Props) {
     );
 }
 
-function getFlatListComponentArray(dataArray: any[], animatedProps1: any, style: ViewStyle) {
+function getFlatListComponentArray(dataArray: any[], animatedProps: any, style: ViewStyle) {
     return dataArray.map((arr, index) => {
         return <Animated.FlatList
             pointerEvents="none"
-            animatedProps={animatedProps1}
-            useNativeDriver={true}
-            persistentScrollbar={false}
-            scrollEventThrottle={16}
+            animatedProps={animatedProps}
+            // useNativeDriver={true}
+            showsVerticalScrollIndicator={false}
+            // scrollEventThrottle={16}
             style={[style, { width: arr?.[0]?.style?.width}]}
             data={arr}
+            // windowSize={3} // 渲染区域高度
+            // maxToRenderPerBatch={1} // 增量渲染最大数量
+            // updateCellsBatchingPeriod={5000} // 增量渲染时间间隔
+            // debug // 开启 debug 模式
             renderItem={({ item, index }) => {
                 if (Array.isArray(item)) {
                     return (
@@ -670,7 +661,7 @@ const styles = StyleSheet.create({
     },
     row: { flexDirection: 'row' },
     borderStyle: { borderWidth: 1, borderColor: '#C1C0B9' },
-    container: { backgroundColor: '#fff' },
+    container: { backgroundColor: '#FFFFFF' },
     head: { height: 40, backgroundColor: '#f1f8ff' },
     text: { margin: 6 }
 });
