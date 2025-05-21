@@ -406,6 +406,7 @@ export default function Table(props: Props) {
     const tmpLeft = genTopTable(mergedColumnCells, rowNums - frozenRows, props);
     const tmpContent = genTopTable(mergedContentCells, rowNums - frozenRows, props);
 
+    const topArray = getFlatListDataArray(mergedRowCells, frozenRows, props);
     const leftArray = getFlatListDataArray(mergedColumnCells, rowNums - frozenRows, props);
     const contentArray = getFlatListDataArray(mergedContentCells, rowNums - frozenRows, props);
 
@@ -449,16 +450,7 @@ export default function Table(props: Props) {
         transform: [{ translateX: translateX.value }],
     }));
     const animatedStyleX2 = useAnimatedStyle(() => ({
-        transform: [{ translateX: translateX.value + 100 }],
-    }));
-    const animatedStyleX3 = useAnimatedStyle(() => ({
-        transform: [{ translateX: translateX.value + 200 }],
-    }));
-    const animatedStyleY = useAnimatedStyle(() => ({
-        transform: [ { translateY: translateY.value }],
-    }));
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [ { translateX: translateX.value}, {translateY: translateY.value }],
+        transform: [{ translateX: Math.max(translateX.value, -100) }],
     }));
 
     const gestureHandler = Gesture.Pan().onBegin((event) => {
@@ -529,12 +521,13 @@ export default function Table(props: Props) {
                         <ReAnimatedTable borderStyle={styles.borderStyle} >
                             {tmpCorner}
                         </ReAnimatedTable>
-                        <View style={styles.hideOverFlow}>
-                            <Animated.View style={[animatedStyleX]}>
+                        <View style={[styles.hideOverFlow, styles.row]}>
+                            {/* <Animated.View style={[animatedStyleX]}>
                                 <ReAnimatedTable borderStyle={styles.borderStyle} >
                                     {tmpTop}
                                 </ReAnimatedTable>
-                            </Animated.View>
+                            </Animated.View> */}
+                            {getFlatListComponentArray(topArray, {}, animatedStyleX, animatedStyleX2)}
                         </View>
                     </View>
                     <View style={[styles.row, { flex: 1 }]}>
@@ -554,7 +547,7 @@ export default function Table(props: Props) {
                                 </ReAnimatedTable>
                             </Animated.View> */}
 
-                            {getFlatListComponentArray(contentArray, animatedProps2, animatedStyleX)}
+                            {getFlatListComponentArray(contentArray, animatedProps2, animatedStyleX, animatedStyleX2)}
                             {/* <Animated.View style={[animatedStyleX, {flexDirection: 'row', width: 300, flex: 1, backgroundColor: 'blue'}]}> */}
                                 {/* <Animated.FlatList
                                     // scrollEnabled={false}
@@ -601,15 +594,18 @@ export default function Table(props: Props) {
     );
 }
 
-function getFlatListComponentArray(dataArray: any[], animatedProps: any, style: ViewStyle) {
+function getFlatListComponentArray(dataArray: any[], animatedProps: any, style?: ViewStyle, style2?: ViewStyle) {
     return dataArray.map((arr, index) => {
         return <Animated.FlatList
             pointerEvents="none"
             animatedProps={animatedProps}
             // useNativeDriver={true}
             showsVerticalScrollIndicator={false}
+            key={index}
+            // onScroll={scrollHandler1}
+            // animatedProps={animatedProps}
             // scrollEventThrottle={16}
-            style={[style, { width: arr?.[0]?.style?.width}]}
+            style={[style, { width: arr?.[0]?.style?.width, zIndex: 10000 - index, position: 'relative' }, index === 2 ? style2 : undefined]}
             data={arr}
             // windowSize={3} // 渲染区域高度
             // maxToRenderPerBatch={1} // 增量渲染最大数量

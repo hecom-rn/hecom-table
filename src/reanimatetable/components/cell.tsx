@@ -135,6 +135,6 @@ function getIcon(icon: Icon) {
 
 const styles = StyleSheet.create({
   cell: { justifyContent: 'center' },
-  text: { backgroundColor: 'transparent' },
+  text: { backgroundColor: 'white' },
   row: { flexDirection: 'row'},
 });
