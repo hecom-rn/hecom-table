@@ -376,10 +376,60 @@ function getContentSize(props: Props) {
 
 export default function Table(props: Props) {
     const { style, tableData, frozenRows = 0, frozenColumns = 0, onMounted, onContentSize, onScroll } = props;
-    if (!tableData) return <View />;
-    const rowNums = tableData.getChildColumns()?.[0].getDatas().length;
     const contentWidth = useRef(0);
     const contentHeight = useRef(0);
+
+    const translateX = useSharedValue(0);
+    const translateY = useSharedValue(0);
+    const preTranslateX = useSharedValue(0);
+    const preTranslateY = useSharedValue(0);
+
+    useAnimatedReaction(
+        () => translateX.value, // 依赖值
+        (currentValue, previousValue) => {
+            onScroll && runOnJS(onScroll)?.({ nativeEvent: {
+                translateX: -currentValue,
+                translateY: -translateY.value
+            }});
+        }
+    );
+
+    useAnimatedReaction(
+        () => translateY.value, // 依赖值
+        (currentValue, previousValue) => {
+            onScroll && runOnJS(onScroll)?.({ nativeEvent: {
+                translateX: -translateX.value,
+                translateY: -currentValue
+            }});
+        }
+    );
+
+    const animatedStyleX = useAnimatedStyle(() => ({
+        transform: [{ translateX: translateX.value }],
+    }));
+    const animatedStyleX2 = useAnimatedStyle(() => ({
+        transform: [{ translateX: Math.max(translateX.value, -100) }],
+    }));
+    useEffect(() => {
+        // 此处执行组件挂载后的初始化操作（等效 componentDidMount）
+        console.log('组件已挂载 time = ', new Date().getTime());
+        onMounted && onMounted();
+        return () => {
+          // 此处编写清理逻辑（等效 componentWillUnmount）
+          console.log('组件即将卸载');
+        };
+      }, []);
+
+    const animatedProps1 = useAnimatedProps(() => ({
+        contentOffset: { y: -translateY.value }
+    }));
+
+    const animatedProps2 = useAnimatedProps(() => ({
+        contentOffset: { y: -translateY.value }
+    }));
+
+    if (!tableData) return <View />;
+    const rowNums = tableData.getChildColumns()?.[0].getDatas().length;
     const { width, height } = getContentSize(props);
     if (contentWidth.current !== width || contentHeight.current !== height) {
         contentWidth.current = width;
@@ -402,56 +452,10 @@ export default function Table(props: Props) {
     const mergedContentCells = mergeCells(props)?.filter((item) => item.row >= frozenRows && item.col >= frozenColumns);
 
     const tmpCorner = genTopTable(mergedCornerCells, frozenRows, props);
-    const tmpTop = genTopTable(mergedRowCells, frozenRows, props);
-    const tmpLeft = genTopTable(mergedColumnCells, rowNums - frozenRows, props);
-    const tmpContent = genTopTable(mergedContentCells, rowNums - frozenRows, props);
 
     const topArray = getFlatListDataArray(mergedRowCells, frozenRows, props);
     const leftArray = getFlatListDataArray(mergedColumnCells, rowNums - frozenRows, props);
     const contentArray = getFlatListDataArray(mergedContentCells, rowNums - frozenRows, props);
-
-    const translateX = useSharedValue(0);
-    const translateY = useSharedValue(0);
-    const preTranslateX = useSharedValue(0);
-    const preTranslateY = useSharedValue(0);
-
-    useAnimatedReaction(
-        () => translateX.value, // 依赖值
-        (currentValue, previousValue) => {
-            onScroll && runOnJS(onScroll)?.({ nativeEvent: {
-                translateX: -currentValue,
-                translateY: -translateY.value
-            }});
-            // console.log(`XXX值从 ${previousValue} 变为 ${currentValue}`);
-            // onScroll && onScroll({ nativeEvent: {
-            //     translateX: currentValue,
-            //     translateY: translateY.value
-            // }});
-        }
-    );
-
-    useAnimatedReaction(
-        () => translateY.value, // 依赖值
-        (currentValue, previousValue) => {
-            onScroll && runOnJS(onScroll)?.({ nativeEvent: {
-                translateX: -translateX.value,
-                translateY: -currentValue
-            }});
-            // 'worklet';
-            // console.log(`YYY值从 ${previousValue} 变为 ${currentValue}`);
-            // onScroll && onScroll({ nativeEvent: {
-            //     translateX: translateX.value,
-            //     translateY: currentValue
-            // }});
-        }
-    );
-
-    const animatedStyleX = useAnimatedStyle(() => ({
-        transform: [{ translateX: translateX.value }],
-    }));
-    const animatedStyleX2 = useAnimatedStyle(() => ({
-        transform: [{ translateX: Math.max(translateX.value, -100) }],
-    }));
 
     const gestureHandler = Gesture.Pan().onBegin((event) => {
         preTranslateX.value = translateX.value;
@@ -491,28 +495,6 @@ export default function Table(props: Props) {
         runOnJS(Listener.trigger)?.(actionKey, true);
     });
 
-    useEffect(() => {
-        // 此处执行组件挂载后的初始化操作（等效 componentDidMount）
-        console.log('组件已挂载 time = ', new Date().getTime());
-        onMounted && onMounted();
-        return () => {
-          // 此处编写清理逻辑（等效 componentWillUnmount）
-          console.log('组件即将卸载');
-        };
-      }, []);
-
-    const scrollOffset1 = useSharedValue(0);
-
-    const scrollOffset2 = useSharedValue(0);
-
-    const animatedProps1 = useAnimatedProps(() => ({
-        contentOffset: { y: -translateY.value }
-    }));
-
-    const animatedProps2 = useAnimatedProps(() => ({
-        contentOffset: { y: -translateY.value }
-    }));
-
     return (
         <GestureHandlerRootView>
             <GestureDetector gesture={gestureHandler}>
@@ -522,70 +504,15 @@ export default function Table(props: Props) {
                             {tmpCorner}
                         </ReAnimatedTable>
                         <View style={[styles.hideOverFlow, styles.row]}>
-                            {/* <Animated.View style={[animatedStyleX]}>
-                                <ReAnimatedTable borderStyle={styles.borderStyle} >
-                                    {tmpTop}
-                                </ReAnimatedTable>
-                            </Animated.View> */}
                             {getFlatListComponentArray(topArray, {}, animatedStyleX, animatedStyleX2)}
                         </View>
                     </View>
                     <View style={[styles.row, { flex: 1 }]}>
                         <View style={[styles.hideOverFlow, {flexDirection: 'row'}]}>
-                            {/* <Animated.View  style={[animatedStyleY]}>
-                                <ReAnimatedTable borderStyle={styles.borderStyle} >
-                                    {tmpLeft}
-                                </ReAnimatedTable>
-                            </Animated.View> */}
-                           
                             {getFlatListComponentArray(leftArray, animatedProps1, {})}
                         </View>
                         <View style={[styles.hideOverFlow, {flexDirection: 'row'}]}>
-                            {/* <Animated.View style={[{backgroundColor: 'blue', width: 1000, height: 200}]}>
-                                <ReAnimatedTable borderStyle={styles.borderStyle} >
-                                    {tmpContent}
-                                </ReAnimatedTable>
-                            </Animated.View> */}
-
                             {getFlatListComponentArray(contentArray, animatedProps2, animatedStyleX, animatedStyleX2)}
-                            {/* <Animated.View style={[animatedStyleX, {flexDirection: 'row', width: 300, flex: 1, backgroundColor: 'blue'}]}> */}
-                                {/* <Animated.FlatList
-                                    // scrollEnabled={false}
-                                    pointerEvents="none"
-                                    animatedProps={animatedProps2}
-                                    useNativeDriver={true}
-                                    // onScroll={scrollHandler1}
-                                    // animatedProps={animatedProps2}
-                                    scrollEventThrottle={16}
-                                    style={[animatedStyleX, {width: 200, backgroundColor: 'green'}]}
-                                    data={Array.from({ length: 100 }).map((_, index) => ({}))}
-                                    renderItem={({ item, index }) => <View style={{ height: 40, backgroundColor: index % 2 == 0 ? 'blue' : 'red' }} ><Text>`index = ${index}abcdeghijklmnopqrstuvwxyz`</Text></View>}
-                                />
-                                <Animated.FlatList
-                                    // scrollEnabled={false}
-                                    pointerEvents="none"
-                                    animatedProps={animatedProps2}
-                                    useNativeDriver={true}
-                                    // onScroll={scrollHandler1}
-                                    // animatedProps={animatedProps2}
-                                    scrollEventThrottle={16}
-                                    style={[animatedStyleX, {width: 100, backgroundColor: 'green'}]}
-                                    data={Array.from({ length: 100 }).map((_, index) => ({}))}
-                                    renderItem={({ item, index }) => <View style={{ height: 40, backgroundColor: index % 2 == 0 ? 'blue' : 'red' }} ><Text>`index = ${index}abcdeghijklmnopqrstuvwxyz`</Text></View>}
-                                />
-                                <Animated.FlatList
-                                    // scrollEnabled={false}
-                                    pointerEvents="none"
-                                    animatedProps={animatedProps2}
-                                    useNativeDriver={true}
-                                    // onScroll={scrollHandler1}
-                                    // animatedProps={animatedProps2}
-                                    scrollEventThrottle={16}
-                                    style={[animatedStyleX, {width: 100, backgroundColor: 'green'}]}
-                                    data={Array.from({ length: 100 }).map((_, index) => ({}))}
-                                    renderItem={({ item, index }) => <View style={{ height: 40, backgroundColor: index % 2 == 0 ? 'blue' : 'red' }} ><Text>`index = ${index}abcdeghijklmnopqrstuvwxyz`</Text></View>}
-                                /> */}
-                                {/* </Animated.View> */}
                         </View>
                     </View>               
                 </View>
@@ -595,6 +522,7 @@ export default function Table(props: Props) {
 }
 
 function getFlatListComponentArray(dataArray: any[], animatedProps: any, style?: ViewStyle, style2?: ViewStyle) {
+    const ITEM_HEIGHT = 40; // 假设每个项的高度为 40 像素
     return dataArray.map((arr, index) => {
         return <Animated.FlatList
             pointerEvents="none"
@@ -611,13 +539,16 @@ function getFlatListComponentArray(dataArray: any[], animatedProps: any, style?:
             // maxToRenderPerBatch={1} // 增量渲染最大数量
             // updateCellsBatchingPeriod={5000} // 增量渲染时间间隔
             // debug // 开启 debug 模式
+            getItemLayout={(data, index) => (
+                {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index}
+              )}            
             renderItem={({ item, index }) => {
                 if (Array.isArray(item)) {
                     return (
-                        <View style={styles.row}>
+                        <View key={index} style={styles.row}>
                             {item?.map((innerItem, innerIndex) => {
                                 return (
-                                    <ReAnimatedTable borderStyle={styles.borderStyle} >
+                                    <ReAnimatedTable key={innerIndex} borderStyle={styles.borderStyle} >
                                         <Col
                                             data={innerItem?.map((i: ListItem) => i.data)} 
                                             icons={innerItem?.map((i: ListItem) => i.icon)} 
@@ -634,6 +565,7 @@ function getFlatListComponentArray(dataArray: any[], animatedProps: any, style?:
                 } else {
                     return (
                         <CellComponent 
+                            key={index}
                             data={item?.data} 
                             icon={item?.icon} 
                             style={item?.style} 

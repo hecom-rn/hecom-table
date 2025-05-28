@@ -42,13 +42,14 @@ export const Cell: FC<CellProps> = ({
   const textDom = React.isValidElement(data) ? (
     data
   ) : (
-    <Text style={StyleSheet.flatten([textStyle, styles.text])} {...props}>
+    <Text style={[textStyle, styles.text]} {...props}>
       {data}
     </Text>
   );
 
   const borderTopWidth = borderStyle?.borderWidth ?? 0;
   const borderRightWidth = borderTopWidth;
+  // console.log('borderColor = ', borderStyle?.borderColor);
   const borderColor = borderStyle?.borderColor ?? '#000';
 
   const composedStyles = useMemo(() => {
@@ -73,7 +74,7 @@ export const Cell: FC<CellProps> = ({
       onPress={() => {
         onPress?.();
       }}
-      style={StyleSheet.flatten([
+      style={[
         {
           borderTopWidth,
           borderRightWidth,
@@ -82,7 +83,7 @@ export const Cell: FC<CellProps> = ({
         styles.cell,
         composedStyles,
         style,
-      ])}
+      ]}
     >
       {icon ? (
         getContent(icon, textDom)
@@ -135,6 +136,6 @@ function getIcon(icon: Icon) {
 
 const styles = StyleSheet.create({
   cell: { justifyContent: 'center' },
-  text: { backgroundColor: 'white' },
+  text: { backgroundColor: 'white', color: '#333333' },
   row: { flexDirection: 'row'},
 });
