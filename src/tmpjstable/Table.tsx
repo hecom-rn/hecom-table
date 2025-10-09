@@ -47,7 +47,7 @@ function mergeCells(props: Props, preRows?: number, preColumns?: number): Merged
     if (!columnArr.length || !columnArr[0].getDatas().length) return result;
 
     const rows = preColumns === undefined ? columnArr.length : preColumns;
-    const cols = preRows === undefined ? columnArr[0].getDatas().length: preRows;
+    const cols = preRows === undefined ? columnArr[0].getDatas().length: Math.min(preRows, columnArr[0].getDatas().length);
     const visited = Array.from({ length: rows }, () => new Array(cols).fill(false));
 
     // 定义四个方向的偏移量（上、右、下、左）
