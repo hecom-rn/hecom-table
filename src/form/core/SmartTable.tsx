@@ -245,24 +245,24 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
         //   this.getHeight() - this.getPaddingBottom()
         // );
 
-        if (this.tableData != null) {
-            const rect = this.tableData.getTableInfo().getTableRect();
-            if (rect != null) {
-                const scaleRect = this.matrixHelper.getZoomProviderRect(
-                    this.showRect,
-                    rect,
-                    this.tableData.getTableInfo(),
-                );
+        // if (this.tableData != null) {
+        //     const rect = this.tableData.getTableInfo().getTableRect();
+        //     if (rect != null) {
+        //         const scaleRect = this.matrixHelper.getZoomProviderRect(
+        //             this.showRect,
+        //             rect,
+        //             this.tableData.getTableInfo(),
+        //         );
 
-                try {
-                    this.provider.onDraw(canvas, scaleRect, this.showRect, this.tableData, this.config);
-                } catch (e) {
-                    console.error(e);
-                }
+        //         try {
+        //             this.provider.onDraw(canvas, scaleRect, this.showRect, this.tableData, this.config);
+        //         } catch (e) {
+        //             console.error(e);
+        //         }
 
-                // this.drawGridBackground(canvas, this.showRect, scaleRect);
-            }
-        }
+        //         // this.drawGridBackground(canvas, this.showRect, scaleRect);
+        //     }
+        // }
     }
 
     private drawGridBackground(canvas: Canvas, showRect: Rect, scaleRect: Rect): void {
