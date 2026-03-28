@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import { Align, type Canvas, CanvasImpl, Paint, Rect, TextPaint } from '../utils/temp';
+import { Component } from 'react';
+import { StyleSheet } from 'react-native';
 import { Direction } from '../component/IComponent';
 import type { ITableTitle } from '../component/ITableTitle';
 import { TableProvider } from '../component/TableProvider';
@@ -13,20 +12,19 @@ import { FontStyle } from '../data/style/FontStyle';
 import { TableData } from '../data/table/TableData';
 import type { OnColumnClickListener } from '../listener/OnColumnClickListener';
 import type { OnTableChangeListener } from '../listener/OnTableChangeListener';
-import { MatrixHelper, MotionEvent, ScaleGestureDetector } from '../matrix/MatrixHelper';
+import { MatrixHelper } from '../matrix/MatrixHelper';
+import { Align, type Canvas, Paint, Rect, TextPaint } from '../utils/temp';
 
-import { TableMeasurer } from './TableMeasurer';
-import { TableParser } from './TableParser';
-import { TableConfig } from './TableConfig';
-import { SkiaRenderer } from '../../skia/SkiaRenderer';
-import TMPJSTable from '../../tmpjstable/Table';
+import { Dimensions } from 'react-native';
 import * as zrender from 'zrender/lib/zrender';
 import { type ZRenderType } from 'zrender/lib/zrender';
-import { Dimensions, View } from 'react-native';
+import { SkiaRenderer } from '../../skia/SkiaRenderer';
 import { HecomGridFormat } from '../../table/format/HecomGridFormat';
+import TMPJSTable from '../../tmpjstable/Table';
 import type SmartTableProps from './SmartTableProps';
-import { Table, Row, Rows, TableWrapper, Col, Cell } from '../../reanimatetable/index';
-import SkiaChart from '../../skia/skiaChart';
+import { TableConfig } from './TableConfig';
+import { TableMeasurer } from './TableMeasurer';
+import { TableParser } from './TableParser';
 
 // interface TableProps<T> extends ViewProps {
 //     isYSequenceRight: boolean;
@@ -150,7 +148,7 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
         //         />
         //     </View>
         // );
-        const { style, onClickEvent, onMounted, onContentSize, onScroll } = this.props;
+        const { style, onClickEvent, onMounted, onContentSize, onScroll, onScrollEnd } = this.props;
 
         return (
             <TMPJSTable 
@@ -162,6 +160,7 @@ export class SmartTable<T> extends Component<SmartTableProps> implements OnTable
                 onMounted={onMounted}
                 onContentSize={onContentSize}
                 onScroll={onScroll}
+                onScrollEnd={onScrollEnd}
             />
         );
 

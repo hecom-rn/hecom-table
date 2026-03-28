@@ -1,14 +1,11 @@
-import { View, ScrollView, StyleSheet, Dimensions } from "react-native";
-import { Row, TableWrapper, Col, Cell as CellComponent, Table as ReAnimatedTable } from "../reanimatetable/index";
-import { TableData } from "../form/data/table/TableData";
-import { Icon, type Cell } from "../table/bean/Cell";
-import type { Column } from "../form/data/column/Column";
-import { Text } from "react-native-svg";
-import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, type GestureEvent, type PanGestureHandlerEventPayload } from "react-native-gesture-handler";
-import Animated, { runOnJS, useAnimatedGestureHandler, useAnimatedReaction, useAnimatedStyle, useSharedValue, withDecay } from "react-native-reanimated";
-import { useEffect, useRef, useState } from "react";
 import Listener from '@hecom/listener';
-import { max } from "zrender/lib/core/vector";
+import { useEffect, useRef } from "react";
+import { StyleSheet, View } from "react-native";
+import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
+import Animated, { runOnJS, useAnimatedReaction, useAnimatedStyle, useSharedValue, withDecay } from "react-native-reanimated";
+import { TableData } from "../form/data/table/TableData";
+import { Cell as CellComponent, Col, Table as ReAnimatedTable, Row, TableWrapper } from "../reanimatetable/index";
+import { Icon, type Cell } from "../table/bean/Cell";
 
 interface Props {
     style?: any;
@@ -17,6 +14,7 @@ interface Props {
     frozenColumns?: number;
     onClickEvent?: (data: any) => void;
     onScroll?: (data: any) => void;
+    onScrollEnd?: () => void;
     onMounted?: () => void;
     onContentSize?: (obj: {width: number, height: number })=> void;
 }
@@ -272,7 +270,7 @@ function getContentSize(props: Props) {
 }
 
 export default function Table(props: Props) {
-    const { style, tableData, frozenRows = 0, frozenColumns = 0, onMounted, onContentSize, onScroll } = props;
+    const { style, tableData, frozenRows = 0, frozenColumns = 0, onMounted, onContentSize, onScroll, onScrollEnd } = props;
     if (!tableData) return <View />;
     const rowNums = tableData.getChildColumns()?.[0].getDatas().length;
     const contentWidth = useRef(0);
@@ -300,6 +298,7 @@ export default function Table(props: Props) {
     const translateY = useSharedValue(0);
     const preTranslateX = useSharedValue(0);
     const preTranslateY = useSharedValue(0);
+    const isAtBottom = useSharedValue(false);
 
     useAnimatedReaction(
         () => translateX.value, // 依赖值
@@ -323,12 +322,14 @@ export default function Table(props: Props) {
                 translateX: -translateX.value,
                 translateY: -currentValue
             }});
-            // 'worklet';
-            // console.log(`YYY值从 ${previousValue} 变为 ${currentValue}`);
-            // onScroll && onScroll({ nativeEvent: {
-            //     translateX: translateX.value,
-            //     translateY: currentValue
-            // }});
+            const isBottom = maxScrollY > 0 && currentValue <= -maxScrollY;
+            if (isBottom && !isAtBottom.value) {
+                isAtBottom.value = true;
+                onScrollEnd && runOnJS(onScrollEnd)?.();
+                console.log('表格已滚动到底部，translateY = ', currentValue);
+            } else if (!isBottom && isAtBottom.value) {
+                isAtBottom.value = false;
+            }
         }
     );
 
